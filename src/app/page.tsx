@@ -4,13 +4,11 @@ import {
   Skeleton,
   VStack,
 } from "@chakra-ui/react";
-import { ColorModeToggle } from "../components/color-mode-toggle";
-import ServiceOptionCards from "@/components/service-option-cards";
-import PronunciationInput from "@/components/pronunciation-input";
-import { RadioCardRoot } from "@/components/ui/radio-card";
+
+import { ColorModeToggle } from "@/components/ui/custom/color-mode-toggle";
+import { PronunciationPractice } from "@/components/pronunciation/pronunciation-practicer";
 
 export default function Home() {
-
 
   return (
     <Box textAlign="center" fontSize="xl" pt="25vh">
@@ -21,9 +19,7 @@ export default function Home() {
       </Box>
 
       <VStack gap="8">
-        <ServiceOptionCards />
-        <PronunciationInput />
-        <RadioCardRoot />
+          <PronunciationPractice />
       </VStack>
 
     </Box>
