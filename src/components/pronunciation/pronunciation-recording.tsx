@@ -3,19 +3,24 @@ import {
   VStack,
   Box,
   Text,
-  Button,
   HStack,
   Flex,
   IconButton,
   Heading,
   Badge,
   Center,
-  useToast,
+  Button,
 } from "@chakra-ui/react";
-import { Mic, MicOff, RotateCcw } from "lucide-react";
-import { PracticeData } from "@/types";
-import { useRecording, useAzureSpeech } from "@/hooks";
-import { LANGUAGE_OPTIONS } from "@/constants";
+import { toaster } from "@/components/ui/toaster";
+import {
+  FaMicrophone,
+  FaMicrophoneSlash,
+  FaArrowRotateLeft,
+} from "react-icons/fa6";
+import { PracticeData } from "@/types/pronunciation";
+import { useRecording } from "@/hooks/useRecording";
+import { useAzureSpeech } from "@/hooks/useAzureSpeech";
+import { LANGUAGE_OPTIONS } from "@/constants/languages";
 import { useColorModeValue } from "../ui/color-mode";
 
 interface RecordingComponentProps {
@@ -29,7 +34,6 @@ export default function RecordingComponent({
 }: RecordingComponentProps) {
   const recording = useRecording();
   const azureSpeech = useAzureSpeech();
-  const toast = useToast();
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -47,15 +51,14 @@ export default function RecordingComponent({
         await recording.startRecording();
       }
     } catch (error) {
-      toast({
+      toaster.create({
         title: "Recording Error",
         description:
           error instanceof Error
             ? error.message
             : "Failed to access microphone",
-        status: "error",
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     }
   };
@@ -65,20 +68,18 @@ export default function RecordingComponent({
 
     try {
       await azureSpeech.analyzePronunciation(recording.audioBlob, practiceData);
-      toast({
+      toaster.create({
         title: "Analysis Complete",
         description: "Your pronunciation has been analyzed!",
-        status: "success",
         duration: 3000,
-        isClosable: true,
+        closable: true,
       });
     } catch (error) {
-      toast({
+      toaster.create({
         title: "Analysis Error",
         description: "Failed to analyze pronunciation. Please try again.",
-        status: "error",
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     }
   };
@@ -93,7 +94,7 @@ export default function RecordingComponent({
       borderColor={borderColor}
       shadow="sm"
     >
-      <VStack spacing={6} align="stretch">
+      <VStack gap={6} align="stretch">
         <Flex justify="space-between" align="center">
           <Heading size="md" color={textColor}>
             Practice Recording
@@ -102,13 +103,8 @@ export default function RecordingComponent({
             <Badge colorScheme="blue" variant="subtle">
               {selectedLanguageLabel}
             </Badge>
-            <Button
-              size="sm"
-              variant="ghost"
-              leftIcon={<RotateCcw size={16} />}
-              onClick={onStartOver}
-            >
-              Start Over
+            <Button size="sm" variant="ghost" onClick={onStartOver}>
+              <FaArrowRotateLeft size={16} /> Start Over
             </Button>
           </HStack>
         </Flex>
@@ -130,25 +126,28 @@ export default function RecordingComponent({
           </Box>
         </Box>
 
-        <VStack spacing={4}>
+        <VStack gap={4}>
           <Center>
             <IconButton
               aria-label={
                 recording.isRecording ? "Stop recording" : "Start recording"
               }
-              icon={
-                recording.isRecording ? <MicOff size={32} /> : <Mic size={32} />
-              }
               size="xl"
               colorScheme={recording.isRecording ? "red" : "blue"}
               variant={recording.isRecording ? "solid" : "outline"}
-              isRound
+              rounded="full"
               onClick={handleRecordingToggle}
               _hover={{
                 transform: "scale(1.05)",
               }}
               transition="all 0.2s"
-            />
+            >
+              {recording.isRecording ? (
+                <FaMicrophoneSlash size={32} />
+              ) : (
+                <FaMicrophone size={32} />
+              )}{" "}
+            </IconButton>
           </Center>
 
           <Text
@@ -169,7 +168,7 @@ export default function RecordingComponent({
               colorScheme="green"
               onClick={handleAnalyze}
               size="md"
-              isLoading={azureSpeech.isAnalyzing}
+              loading={azureSpeech.isAnalyzing}
               loadingText="Analyzing..."
             >
               Analyze Pronunciation
