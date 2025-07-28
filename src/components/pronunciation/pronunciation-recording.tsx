@@ -35,7 +35,7 @@ export default function RecordingComponent({
   onStartOver,
 }: RecordingComponentProps) {
   const recording = useRecording();
-  const { isAnalyzing, result, analyzePronunciation } = useAzureSpeech();
+  const { isAnalyzing, analyzePronunciation } = useAzureSpeech();
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -48,7 +48,7 @@ export default function RecordingComponent({
   const handleRecordingToggle = async (): Promise<void> => {
     try {
       if (recording.isRecording) {
-        recording.stopRecording();
+        await recording.stopRecording();
       } else {
         await recording.startRecording();
       }
@@ -59,6 +59,7 @@ export default function RecordingComponent({
           error instanceof Error
             ? error.message
             : "Failed to access microphone",
+        type: "error",
         duration: 5000,
         closable: true,
       });
@@ -74,16 +75,11 @@ export default function RecordingComponent({
         practiceData,
         onAnalysisComplete
       );
-      toaster.create({
-        title: "Analysis Complete",
-        description: "Your pronunciation has been analyzed!",
-        duration: 3000,
-        closable: true,
-      });
     } catch (error) {
       toaster.create({
         title: "Analysis Error",
         description: `${error}`,
+        type: "error",
         duration: 5000,
         closable: true,
       });
