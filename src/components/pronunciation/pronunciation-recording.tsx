@@ -35,7 +35,7 @@ export default function RecordingComponent({
   onStartOver,
 }: RecordingComponentProps) {
   const recording = useRecording();
-  const azureSpeech = useAzureSpeech();
+  const { isAnalyzing, result, analyzePronunciation } = useAzureSpeech();
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -69,26 +69,21 @@ export default function RecordingComponent({
     if (!recording.audioBlob) return;
 
     try {
-      const result = await azureSpeech.analyzePronunciation(recording.audioBlob, practiceData);
+      await analyzePronunciation(
+        recording.audioBlob,
+        practiceData,
+        onAnalysisComplete
+      );
       toaster.create({
         title: "Analysis Complete",
         description: "Your pronunciation has been analyzed!",
         duration: 3000,
         closable: true,
       });
-
-      // Handle Results
-      if (result != null) {
-      onAnalysisComplete(
-        result["result"]
-      );
-    }
-
-
     } catch (error) {
       toaster.create({
         title: "Analysis Error",
-        description: "Failed to analyze pronunciation. Please try again.",
+        description: `${error}`,
         duration: 5000,
         closable: true,
       });
@@ -179,7 +174,7 @@ export default function RecordingComponent({
               colorScheme="green"
               onClick={handleAnalyze}
               size="md"
-              loading={azureSpeech.isAnalyzing}
+              loading={isAnalyzing}
               loadingText="Analyzing..."
             >
               Analyze Pronunciation

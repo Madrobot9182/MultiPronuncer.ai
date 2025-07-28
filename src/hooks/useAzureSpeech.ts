@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { PracticeData, AzurePronunciationResult } from '@/types/pronunciation';
-import { azureSpeechService } from '@/services/azureSpeechService';
+import { useState } from "react";
+import { PracticeData, AzurePronunciationResult } from "@/types/pronunciation";
+import { azureSpeechService } from "@/services/azureSpeechService";
 
 export const useAzureSpeech = () => {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -9,11 +9,12 @@ export const useAzureSpeech = () => {
 
   const analyzePronunciation = async (
     audioBlob: Blob,
-    practiceData: PracticeData
+    practiceData: PracticeData,
+    onComplete?: (result: AzurePronunciationResult) => void
   ): Promise<void> => {
     setIsAnalyzing(true);
     setError(null);
-    
+
     try {
       const analysisResult = await azureSpeechService.analyzePronunciation(
         audioBlob,
@@ -21,10 +22,14 @@ export const useAzureSpeech = () => {
         practiceData.language
       );
       setResult(analysisResult);
+      if (onComplete) {
+        onComplete(analysisResult);
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Analysis failed';
+      const errorMessage =
+        err instanceof Error ? err.message : "Analysis failed";
       setError(errorMessage);
-      console.error('Pronunciation analysis error:', err);
+      console.error("Pronunciation analysis error:", err);
     } finally {
       setIsAnalyzing(false);
     }

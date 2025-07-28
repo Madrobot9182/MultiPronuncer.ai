@@ -16,7 +16,6 @@ import {
   ProgressCircleRange
 } from '@chakra-ui/react';
 import { Card } from '@chakra-ui/react';
-import { Progress } from '@chakra-ui/react';
 import { Stat } from '@chakra-ui/react';
 import { 
   MdRotateLeft,
