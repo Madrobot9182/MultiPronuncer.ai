@@ -17,7 +17,7 @@ import {
   FaMicrophoneSlash,
   FaArrowRotateLeft,
 } from "react-icons/fa6";
-import { PracticeData } from "@/types/pronunciation";
+import { AzurePronunciationResult, PracticeData } from "@/types/pronunciation";
 import { useRecording } from "@/hooks/useRecording";
 import { useAzureSpeech } from "@/hooks/useAzureSpeech";
 import { LANGUAGE_OPTIONS } from "@/constants/languages";
@@ -25,11 +25,13 @@ import { useColorModeValue } from "../ui/color-mode";
 
 interface RecordingComponentProps {
   practiceData: PracticeData;
+  onAnalysisComplete: (data: AzurePronunciationResult) => void;
   onStartOver: () => void;
 }
 
 export default function RecordingComponent({
   practiceData,
+  onAnalysisComplete,
   onStartOver,
 }: RecordingComponentProps) {
   const recording = useRecording();
@@ -67,13 +69,22 @@ export default function RecordingComponent({
     if (!recording.audioBlob) return;
 
     try {
-      await azureSpeech.analyzePronunciation(recording.audioBlob, practiceData);
+      const result = await azureSpeech.analyzePronunciation(recording.audioBlob, practiceData);
       toaster.create({
         title: "Analysis Complete",
         description: "Your pronunciation has been analyzed!",
         duration: 3000,
         closable: true,
       });
+
+      // Handle Results
+      if (result != null) {
+      onAnalysisComplete(
+        result["result"]
+      );
+    }
+
+
     } catch (error) {
       toaster.create({
         title: "Analysis Error",

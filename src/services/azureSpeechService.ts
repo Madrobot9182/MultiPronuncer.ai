@@ -1,268 +1,240 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { AzurePronunciationResult } from '@/types/pronunciation';
+// src/services/azureSpeechService.ts
+import { AzurePronunciationResult } from "@/types/pronunciation";
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
-interface AzureConfig {
-  subscriptionKey: string;
-  region: string;
-  endpoint: string;
-}
-
-interface PronunciationAssessmentParams {
-  ReferenceText: string;
-  GradingSystem: 'HundredMark';
-  Dimension: 'Comprehensive';
-  EnableMiscue: boolean;
+interface AzurePronunciationAssessment {
+  AccuracyScore: number;
+  FluencyScore: number;
+  CompletenessScore: number;
+  PronunciationScore: number;
 }
 
 interface AzureWordResult {
   Word: string;
   PronunciationAssessment: {
     AccuracyScore: number;
-    ErrorType: 'None' | 'Omission' | 'Insertion' | 'Mispronunciation';
+    ErrorType: "None" | "Omission" | "Insertion" | "Mispronunciation";
   };
 }
 
+interface AzureNBestResult {
+  Confidence: number;
+  Display: string;
+  PronunciationAssessment: AzurePronunciationAssessment;
+  Words: AzureWordResult[];
+}
+
 interface AzureResponse {
-  NBest: Array<{
-    PronunciationAssessment: {
-      AccuracyScore: number;
-      FluencyScore: number;
-      CompletenessScore: number;
-      PronunciationScore: number;
-    };
-    Words: AzureWordResult[];
-  }>;
+  RecognitionStatus: string;
+  DisplayText: string;
+  NBest: AzureNBestResult[];
 }
 
 class AzureSpeechService {
-  private config: AzureConfig;
-  private axiosInstance: AxiosInstance;
+  private speechConfig: sdk.SpeechConfig;
 
   constructor() {
-    // Validate environment variables
     const subscriptionKey = process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY;
     const region = process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION;
 
     if (!subscriptionKey || !region) {
       throw new Error(
-        'Missing Azure Speech Service configuration. Please check your .env.local file for NEXT_PUBLIC_AZURE_SPEECH_KEY and NEXT_PUBLIC_AZURE_SPEECH_REGION'
+        "Azure Speech Service credentials not found. Please check your environment variables."
       );
     }
 
-    this.config = {
-      subscriptionKey,
-      region,
-      endpoint: `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`
-    };
-
-    // Create axios instance with default config
-    this.axiosInstance = axios.create({
-      baseURL: this.config.endpoint,
-      timeout: 30000, // 30 seconds timeout
-      headers: {
-        'Ocp-Apim-Subscription-Key': this.config.subscriptionKey,
-        'Accept': 'application/json',
-      },
-    });
-
-    // Add request interceptor for logging (optional)
-    this.axiosInstance.interceptors.request.use(
-      (config) => {
-        console.log('Azure Speech API Request:', {
-          url: config.url,
-          method: config.method,
-          headers: { ...config.headers, 'Ocp-Apim-Subscription-Key': '[HIDDEN]' }
-        });
-        return config;
-      },
-      (error) => {
-        console.error('Request interceptor error:', error);
-        return Promise.reject(error);
-      }
-    );
-
-    // Add response interceptor for error handling
-    this.axiosInstance.interceptors.response.use(
-      (response) => {
-        console.log('Azure Speech API Response:', {
-          status: response.status,
-          statusText: response.statusText
-        });
-        return response;
-      },
-      (error) => {
-        console.error('Azure Speech API Error:', {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          message: error.message
-        });
-        return Promise.reject(this.handleApiError(error));
-      }
-    );
+    this.speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, region);
+    this.speechConfig.speechRecognitionLanguage = "en-US";
   }
 
   async analyzePronunciation(
     audioBlob: Blob,
     referenceText: string,
-    language: string
+    language: string = "en-US"
   ): Promise<AzurePronunciationResult> {
+    let speechRecognizer: sdk.SpeechRecognizer | null = null;
+
     try {
-      // Validate inputs
-      if (!audioBlob || audioBlob.size === 0) {
-        throw new Error('Invalid audio data provided');
-      }
-
-      if (!referenceText.trim()) {
-        throw new Error('Reference text is required');
-      }
-
-      if (!this.isValidAudioFormat(audioBlob)) {
-        console.warn(`Audio format ${audioBlob.type} may not be optimal. Supported formats: WAV, WebM, MP4`);
-      }
-
-      // Convert blob to ArrayBuffer
-      const audioBuffer = await audioBlob.arrayBuffer();
+      this.validateInputs(audioBlob, referenceText);
       
-      // Prepare pronunciation assessment parameters
-      const pronunciationAssessmentParams: PronunciationAssessmentParams = {
-        ReferenceText: referenceText,
-        GradingSystem: 'HundredMark',
-        Dimension: 'Comprehensive',
-        EnableMiscue: false
-      };
+      console.log("Starting pronunciation analysis:", {
+        audioSize: audioBlob.size,
+        audioType: audioBlob.type,
+        referenceText,
+        language,
+      });
 
-      // Prepare request parameters
-      const params = {
-        language: language,
-        format: 'detailed',
-        'pronunciation-assessment': JSON.stringify(pronunciationAssessmentParams)
-      };
+      // Set language
+      this.speechConfig.speechRecognitionLanguage = language;
 
-      // Make the API call
-      const response: AxiosResponse<AzureResponse> = await this.axiosInstance.post(
-        '', // Using base URL from axios instance
-        audioBuffer,
-        {
-          params,
-          headers: {
-            'Content-Type': this.getContentType(audioBlob),
-          },
-          // Don't transform the request data
-          transformRequest: [(data) => data],
-        }
+      // Create audio config
+      const audioConfig = await this.createAudioConfig(audioBlob);
+
+      // Create speech recognizer
+      speechRecognizer = new sdk.SpeechRecognizer(this.speechConfig, audioConfig);
+
+      // Configure pronunciation assessment
+      const pronunciationConfig = new sdk.PronunciationAssessmentConfig(
+        referenceText,
+        sdk.PronunciationAssessmentGradingSystem.HundredMark,
+        sdk.PronunciationAssessmentGranularity.Phoneme,
+        false // Disable miscue detection for better accuracy
       );
+      pronunciationConfig.applyTo(speechRecognizer);
 
-      // Transform and return the result
-      return this.transformAzureResponse(response.data);
+      // Perform recognition
+      const result = await this.performRecognition(speechRecognizer);
       
+      // Parse result
+      return this.parseResult(result);
+
     } catch (error) {
-      console.error('Pronunciation analysis failed:', error);
-      throw error;
-    }
-  }
-
-  private handleApiError(error: any): Error {
-    if (error.response) {
-      // Server responded with error status
-      const status = error.response.status;
-      const message = error.response.data?.message || error.response.statusText;
-      
-      switch (status) {
-        case 401:
-          return new Error('Invalid Azure Speech Service subscription key. Please check your API key.');
-        case 403:
-          return new Error('Access denied. Please check your Azure Speech Service permissions.');
-        case 429:
-          return new Error('Too many requests. Please wait a moment and try again.');
-        case 400:
-          return new Error(`Bad request: ${message}. Please check your audio format and reference text.`);
-        case 500:
-          return new Error('Azure Speech Service is temporarily unavailable. Please try again later.');
-        default:
-          return new Error(`Azure Speech Service error (${status}): ${message}`);
+      console.error("Pronunciation analysis failed:", error);
+      throw error instanceof Error ? error : new Error("Unknown error occurred");
+    } finally {
+      // Cleanup
+      if (speechRecognizer) {
+        speechRecognizer.close();
       }
-    } else if (error.request) {
-      // Request was made but no response received
-      return new Error('No response from Azure Speech Service. Please check your internet connection.');
-    } else {
-      // Something else happened
-      return new Error(`Request setup error: ${error.message}`);
     }
   }
 
-  private transformAzureResponse(azureResponse: AzureResponse): AzurePronunciationResult {
-    const nbest = azureResponse.NBest?.[0];
-    
-    if (!nbest?.PronunciationAssessment) {
-      throw new Error('Invalid response format from Azure Speech Service');
+  private validateInputs(audioBlob: Blob, referenceText: string): void {
+    if (!audioBlob || audioBlob.size === 0) {
+      throw new Error("Invalid audio data provided");
     }
 
-    const assessment = nbest.PronunciationAssessment;
+    if (!referenceText.trim()) {
+      throw new Error("Reference text is required");
+    }
+
+    const validTypes = ["wav", "webm", "mp4", "mpeg"];
+    const isValidFormat = validTypes.some(type => audioBlob.type.includes(type));
+    
+    if (!isValidFormat) {
+      throw new Error(`Unsupported audio format: ${audioBlob.type}`);
+    }
+  }
+
+  private async createAudioConfig(audioBlob: Blob): Promise<sdk.AudioConfig> {
+    const audioBuffer = await audioBlob.arrayBuffer();
+    
+    // Create audio format based on blob type
+    const audioFormat = audioBlob.type.includes('wav') 
+      ? sdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
+      : sdk.AudioStreamFormat.getDefaultInputFormat();
+
+    const pushStream = sdk.AudioInputStream.createPushStream(audioFormat);
+    pushStream.write(audioBuffer);
+    pushStream.close();
+
+    return sdk.AudioConfig.fromStreamInput(pushStream);
+  }
+
+  private performRecognition(speechRecognizer: sdk.SpeechRecognizer): Promise<sdk.SpeechRecognitionResult> {
+    return new Promise((resolve, reject) => {
+      speechRecognizer.recognizeOnceAsync(
+        (result) => resolve(result),
+        (error) => reject(new Error(`Speech recognition failed: ${error}`))
+      );
+    });
+  }
+
+  private parseResult(result: sdk.SpeechRecognitionResult): AzurePronunciationResult {
+    // Check recognition status
+    if (result.reason === sdk.ResultReason.NoMatch) {
+      throw new Error("No speech could be recognized. Please speak more clearly.");
+    }
+
+    if (result.reason === sdk.ResultReason.Canceled) {
+      const cancellation = sdk.CancellationDetails.fromResult(result);
+      throw new Error(`Recognition cancelled: ${cancellation.reason} - ${cancellation.errorDetails}`);
+    }
+
+    if (result.reason !== sdk.ResultReason.RecognizedSpeech) {
+      throw new Error("Speech recognition failed.");
+    }
+
+    // Get the JSON result - this is the correct property
+    const jsonResult = result.properties.getProperty(sdk.PropertyId.SpeechServiceResponse_JsonResult);
+    
+    if (!jsonResult) {
+      throw new Error("No pronunciation assessment data received.");
+    }
+
+    let azureResponse: AzureResponse;
+    try {
+      azureResponse = JSON.parse(jsonResult);
+    } catch (error) {
+      throw new Error(`Failed to parse pronunciation assessment result. ${error}`);
+    }
+
+    return this.transformResponse(azureResponse);
+  }
+
+  private transformResponse(response: AzureResponse): AzurePronunciationResult {
+    console.log("Azure response:", response);
+
+    if (!response.NBest || response.NBest.length === 0) {
+      throw new Error("No pronunciation assessment results received.");
+    }
+
+    const bestResult = response.NBest[0];
+    
+    if (!bestResult.PronunciationAssessment) {
+      throw new Error("Pronunciation assessment data missing from response.");
+    }
+
+    const assessment = bestResult.PronunciationAssessment;
+    console.log("Pronunciation scores:", assessment);
 
     return {
-      accuracyScore: Math.round(assessment.AccuracyScore * 100) / 100,
-      fluencyScore: Math.round(assessment.FluencyScore * 100) / 100,
-      completenessScore: Math.round(assessment.CompletenessScore * 100) / 100,
-      pronunciationScore: Math.round(assessment.PronunciationScore * 100) / 100,
-      words: nbest.Words?.map((word) => ({
-        word: word.Word,
-        accuracyScore: Math.round(word.PronunciationAssessment.AccuracyScore * 100) / 100,
-        errorType: word.PronunciationAssessment.ErrorType || 'None',
-      })) || []
+      accuracyScore: this.roundScore(assessment.AccuracyScore),
+      fluencyScore: this.roundScore(assessment.FluencyScore),
+      completenessScore: this.roundScore(assessment.CompletenessScore),
+      pronunciationScore: this.roundScore(assessment.PronunciationScore),
+      words: this.transformWords(bestResult.Words || []),
     };
   }
 
-  private getContentType(audioBlob: Blob): string {
-    // Map blob types to Azure-compatible content types
-    const typeMapping: Record<string, string> = {
-      'audio/wav': 'audio/wav; codecs=audio/pcm; samplerate=16000',
-      'audio/webm': 'audio/webm; codecs=opus',
-      'audio/mp4': 'audio/mp4',
-      'audio/mpeg': 'audio/mpeg',
-    };
-
-    // Find matching type or use a default
-    const matchingType = Object.keys(typeMapping).find(type => 
-      audioBlob.type.includes(type.split('/')[1])
-    );
-
-    return matchingType ? typeMapping[matchingType] : typeMapping['audio/wav'];
+  private transformWords(words: AzureWordResult[]): Array<{
+    word: string;
+    accuracyScore: number;
+    errorType: AzureWordResult["PronunciationAssessment"]["ErrorType"];
+  }> {
+    return words.map(word => ({
+      word: word.Word,
+      accuracyScore: this.roundScore(word.PronunciationAssessment.AccuracyScore),
+      errorType: word.PronunciationAssessment.ErrorType,
+    }));
   }
 
-  isValidAudioFormat(audioBlob: Blob): boolean {
-    const validTypes = ['wav', 'webm', 'mp4', 'mpeg'];
-    return validTypes.some(type => audioBlob.type.includes(type));
+  private roundScore(score: number): number {
+    return Math.round(Math.max(0, Math.min(100, score || 0)) * 100) / 100;
   }
 
   getAvailableLanguages(): string[] {
     return [
-      'en-US', 'en-GB', 'es-ES', 'es-MX', 'fr-FR', 
-      'de-DE', 'it-IT', 'pt-BR', 'ja-JP', 'ko-KR', 'zh-CN'
+      "en-US", "en-GB", "en-AU", "en-CA",
+      "es-ES", "es-MX", "es-AR",
+      "fr-FR", "fr-CA",
+      "de-DE", "de-AT",
+      "it-IT",
+      "pt-BR", "pt-PT",
+      "ja-JP",
+      "ko-KR",
+      "zh-CN", "zh-TW",
+      "ru-RU",
+      "ar-SA",
+      "hi-IN"
     ];
   }
 
-  // Utility method to test connection
-  async testConnection(): Promise<boolean> {
-    try {
-      // Create a minimal test request
-      const testBlob = new Blob(['test'], { type: 'audio/wav' });
-      await this.analyzePronunciation(testBlob, 'test', 'en-US');
-      return true;
-    } catch (error) {
-      console.error('Azure Speech Service connection test failed:', error);
-      return false;
+  dispose(): void {
+    if (this.speechConfig) {
+      this.speechConfig.close();
     }
-  }
-
-  // Get service info
-  getServiceInfo(): { region: string; hasKey: boolean } {
-    return {
-      region: this.config.region,
-      hasKey: !!this.config.subscriptionKey
-    };
   }
 }
 
-// Export singleton instance
 export const azureSpeechService = new AzureSpeechService();
