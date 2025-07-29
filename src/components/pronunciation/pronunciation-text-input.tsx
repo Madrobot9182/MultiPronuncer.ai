@@ -7,6 +7,8 @@ import {
   Button,
   Flex,
   createListCollection,
+  HStack,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { PracticeData } from "@/types/pronunciation";
 import { LANGUAGE_OPTIONS, MAX_TEXT_CHARACTERS } from "@/constants/languages";
@@ -19,6 +21,7 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "../ui/select";
+import { EN_US_EXAMPLEPARAGRAPHS } from "@/constants/examples";
 
 interface TextInputComponentProps {
   onSubmit: (data: PracticeData) => void;
@@ -37,7 +40,8 @@ export default function TextInputComponent({
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
-
+  const exampleParagraphs = EN_US_EXAMPLEPARAGRAPHS;   // TODO determine based on selected language
+  
   const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
     if (e.target.value.length <= MAX_TEXT_CHARACTERS) {
       setText(e.target.value);
@@ -59,6 +63,11 @@ export default function TextInputComponent({
     }
   };
 
+    const handleInsertText = (text: string) => {
+    // Insert the text into your textbox here
+    setText(text)
+  };
+
   const isSubmitDisabled: boolean = !text.trim();
 
   return (
@@ -73,14 +82,19 @@ export default function TextInputComponent({
     >
       <VStack gap={4} align="stretch">
         <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={2} color={textColor}>
-            Select Language
-          </Text>
-
+          <HStack gap={12}>
+            <SimpleGrid columns={3} row={2} gap={2} flex={1}>
+              {exampleParagraphs.slice(0,6).map((example, index) => (
+                <Button key={index} size="xs" onClick={() => handleInsertText(example.text)}>
+                  {example.label}
+                </Button>
+              ))}
+            </SimpleGrid>
           <SelectRoot
             collection={languageCollection}
             value={[selectedLanguage]}
             onValueChange={handleLanguageChange}
+            flex={1}
           >
             <SelectTrigger bg={useColorModeValue("white", "gray.700")}>
               <SelectValueText placeholder="Select a language" />
@@ -93,12 +107,10 @@ export default function TextInputComponent({
               ))}
             </SelectContent>
           </SelectRoot>
+          </HStack>
         </Box>
 
         <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={2} color={textColor}>
-            Enter text to practice pronunciation
-          </Text>
           <Textarea
             value={text}
             onChange={handleTextChange}

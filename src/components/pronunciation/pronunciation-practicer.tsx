@@ -10,7 +10,7 @@ import RecordingComponent from "./pronunciation-recording";
 import TextInputComponent from "./pronunciation-text-input";
 import ResultComponent from "./pronunciation-result";
 
-export const PronunciationPractice: React.FC = () => {
+export default function PronunciationPractice() {
   const [currentStep, setCurrentStep] = useState<PracticeStep>("input");
   const [practiceData, setPracticeData] = useState<PracticeData | null>(null);
   const [resultData, setResultData] = useState<AzurePronunciationResult | null>(
@@ -54,4 +54,4 @@ export const PronunciationPractice: React.FC = () => {
       )}
     </VStack>
   );
-};
+}
