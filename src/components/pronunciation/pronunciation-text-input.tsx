@@ -84,7 +84,7 @@ export default function TextInputComponent({
         <Box>
           <HStack gap={12}>
             <SimpleGrid columns={3} row={2} gap={2} flex={1}>
-              {exampleParagraphs.slice(0,6).map((example, index) => (
+              {exampleParagraphs.slice(0,3).map((example, index) => (
                 <Button key={index} size="xs" onClick={() => handleInsertText(example.text)}>
                   {example.label}
                 </Button>

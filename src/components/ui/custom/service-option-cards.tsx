@@ -29,6 +29,7 @@ export default function ServiceOptionCards({
   return (
     <RadioCard.Root
       defaultValue="pronunciation"
+      
       onValueChange={(details) => {
         if (details.value) {
           onSelect(details.value as SpeechServices);
@@ -38,7 +39,7 @@ export default function ServiceOptionCards({
       <RadioCard.Label>Select Service</RadioCard.Label>
       <HStack align="stretch">
         {items.map((item) => (
-          <RadioCard.Item key={item.value} value={item.value}>
+          <RadioCard.Item key={item.value} value={item.value} cursor={"pointer"}>
             <RadioCard.ItemHiddenInput />
             <RadioCard.ItemControl>
               <RadioCard.ItemContent>

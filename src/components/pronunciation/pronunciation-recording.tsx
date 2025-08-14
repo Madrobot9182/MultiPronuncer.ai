@@ -14,7 +14,7 @@ import {
 import { toaster } from "@/components/ui/toaster";
 import {
   FaMicrophone,
-  FaMicrophoneSlash,
+  FaRecordVinyl,
   FaArrowRotateLeft,
 } from "react-icons/fa6";
 import { AzurePronunciationResult, PracticeData } from "@/types/pronunciation";
@@ -145,7 +145,7 @@ export default function RecordingComponent({
               transition="all 0.2s"
             >
               {recording.isRecording ? (
-                <FaMicrophoneSlash size={32} />
+                <FaRecordVinyl size={32} />
               ) : (
                 <FaMicrophone size={32} />
               )}{" "}
