@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   VStack,
   HStack,
@@ -13,23 +13,23 @@ import {
   Wrap,
   WrapItem,
   ProgressCircleTrack,
-  ProgressCircleRange
-} from '@chakra-ui/react';
-import { Card } from '@chakra-ui/react';
-import { Stat } from '@chakra-ui/react';
-import { 
+  ProgressCircleRange,
+} from "@chakra-ui/react";
+import { Card } from "@chakra-ui/react";
+import { Stat } from "@chakra-ui/react";
+import {
   MdRotateLeft,
   MdEmojiEvents,
   MdGpsFixed,
   MdTrendingUp,
   MdCheckCircle,
   MdWarning,
-  MdCancel
-} from 'react-icons/md';
+  MdCancel,
+} from "react-icons/md";
 import { AzurePronunciationResult, WordResult } from "@/types/pronunciation";
-import { useColorModeValue } from '../ui/color-mode';
-import { ProgressRoot } from '../ui/progress';
-import { ProgressCircleRoot } from '../ui/progress-circle';
+import { useColorModeValue } from "../ui/color-mode";
+import { ProgressRoot } from "../ui/progress";
+import { ProgressCircleRoot } from "../ui/progress-circle";
 
 interface PronunciationResultComponentProps {
   resultData: AzurePronunciationResult;
@@ -40,40 +40,56 @@ export default function ResultComponent({
   resultData,
   onStartOver,
 }: PronunciationResultComponentProps) {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const textColor = useColorModeValue('gray.600', 'gray.300');
-  const cardBg = useColorModeValue('gray.50', 'gray.700');
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.600", "gray.300");
+  const cardBg = useColorModeValue("gray.50", "gray.700");
 
   // Helper function to get score color
   const getScoreColor = (score: number): string => {
-    if (score >= 80) return 'green';
-    if (score >= 60) return 'yellow';
-    return 'red';
+    if (score >= 80) return "green";
+    if (score >= 60) return "yellow";
+    return "red";
   };
 
   // Helper function to get score label
   const getScoreLabel = (score: number): string => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 80) return 'Good';
-    if (score >= 70) return 'Fair';
-    if (score >= 60) return 'Needs Practice';
-    return 'Needs Improvement';
+    if (score >= 90) return "Excellent";
+    if (score >= 80) return "Good";
+    if (score >= 70) return "Fair";
+    if (score >= 60) return "Needs Practice";
+    return "Needs Improvement";
   };
 
   // Helper function to get error type styling
   const getErrorTypeStyle = (errorType: string) => {
     switch (errorType) {
-      case 'None':
-        return { colorScheme: 'green', icon: MdCheckCircle };
-      case 'Mispronunciation':
-        return { colorScheme: 'red', icon: MdCancel };
-      case 'Omission':
-        return { colorScheme: 'orange', icon: MdWarning };
-      case 'Insertion':
-        return { colorScheme: 'yellow', icon: MdWarning };
+      case "None":
+        return {
+          colorScheme: "green",
+          icon: MdCheckCircle,
+          textDecoration: "",
+        };
+      case "Mispronunciation":
+        return {
+          colorScheme: "red",
+          icon: MdCancel,
+          textDecoration: "underline",
+        };
+      case "Omission":
+        return {
+          colorScheme: "gray",
+          icon: MdWarning,
+          textDecoration: "bracket",
+        };
+      case "Insertion":
+        return {
+          colorScheme: "yellow",
+          icon: MdWarning,
+          textDecoration: "bracket",
+        };
       default:
-        return { colorScheme: 'gray', icon: MdWarning };
+        return { colorScheme: "gray", icon: MdWarning, textDecoration: "" };
     }
   };
 
@@ -98,17 +114,17 @@ export default function ResultComponent({
               Pronunciation Results
             </Heading>
             <HStack gap={2}>
-              <Box as={MdEmojiEvents} color={`${overallColor}.500`} boxSize="20px" />
+              <Box
+                as={MdEmojiEvents}
+                color={`${overallColor}.500`}
+                boxSize="20px"
+              />
               <Text fontSize="sm" color={textColor}>
                 {getScoreLabel(overallScore)}
               </Text>
             </HStack>
           </VStack>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onStartOver}
-          >
+          <Button size="sm" variant="ghost" onClick={onStartOver}>
             <HStack gap={2}>
               <Box as={MdRotateLeft} boxSize="16px" />
               <Text>Try Again</Text>
@@ -121,7 +137,11 @@ export default function ResultComponent({
           <Card.Body>
             <VStack gap={4}>
               <Box position="relative" w="120px" h="120px">
-                <ProgressRoot value={overallScore} size="lg" colorPalette={overallColor}>
+                <ProgressRoot
+                  value={overallScore}
+                  size="lg"
+                  colorPalette={overallColor}
+                >
                   <ProgressCircleRoot>
                     <ProgressCircleTrack />
                     <ProgressCircleRange />
@@ -135,7 +155,11 @@ export default function ResultComponent({
                   direction="column"
                   align="center"
                 >
-                  <Text fontSize="2xl" fontWeight="bold" color={`${overallColor}.500`}>
+                  <Text
+                    fontSize="2xl"
+                    fontWeight="bold"
+                    color={`${overallColor}.500`}
+                  >
                     {overallScore}
                   </Text>
                   <Text fontSize="xs" color={textColor}>
@@ -162,8 +186,8 @@ export default function ResultComponent({
                       <Text>Accuracy</Text>
                     </HStack>
                   </Stat.Label>
-                  <Stat.ValueText 
-                    fontSize="2xl" 
+                  <Stat.ValueText
+                    fontSize="2xl"
                     color={`${getScoreColor(resultData.accuracyScore)}.500`}
                   >
                     {Math.round(resultData.accuracyScore)}%
@@ -186,8 +210,8 @@ export default function ResultComponent({
                       <Text>Fluency</Text>
                     </HStack>
                   </Stat.Label>
-                  <Stat.ValueText 
-                    fontSize="2xl" 
+                  <Stat.ValueText
+                    fontSize="2xl"
                     color={`${getScoreColor(resultData.fluencyScore)}.500`}
                   >
                     {Math.round(resultData.fluencyScore)}%
@@ -210,14 +234,42 @@ export default function ResultComponent({
                       <Text>Completeness</Text>
                     </HStack>
                   </Stat.Label>
-                  <Stat.ValueText 
-                    fontSize="2xl" 
+                  <Stat.ValueText
+                    fontSize="2xl"
                     color={`${getScoreColor(resultData.completenessScore)}.500`}
                   >
                     {Math.round(resultData.completenessScore)}%
                   </Stat.ValueText>
                   <Stat.HelpText>
                     How much of the text you pronounced
+                  </Stat.HelpText>
+                </Stat.Root>
+              </Card.Body>
+            </Card.Root>
+          </GridItem>
+
+          <GridItem>
+            <Card.Root bg={cardBg} h="100%">
+              <Card.Body>
+                <Stat.Root>
+                  <Stat.Label>
+                    <HStack gap={2}>
+                      <Box as={MdCheckCircle} boxSize="16px" />
+                      <Text>Prosody</Text>
+                    </HStack>
+                  </Stat.Label>
+                  <Stat.ValueText
+                    fontSize="2xl"
+                    color={`${resultData.pronunciationScore ? getScoreColor(resultData.pronunciationScore) : "gray"}.500`}
+                  >
+                    {resultData.pronunciationScore
+                      ? Math.round(resultData.pronunciationScore)
+                      : "N/A"}
+                    %
+                  </Stat.ValueText>
+                  <Stat.HelpText>
+                    How your rhythm and intonation matches the language (EN-US
+                    only)
                   </Stat.HelpText>
                 </Stat.Root>
               </Card.Body>
@@ -241,9 +293,11 @@ export default function ResultComponent({
             <Card.Body>
               <Wrap gap={3}>
                 {resultData.words.map((word: WordResult, index: number) => {
-                  const errorStyle = getErrorTypeStyle(word.errorType || 'None');
+                  const errorStyle = getErrorTypeStyle(
+                    word.errorType || "None"
+                  );
                   const wordScore = Math.round(word.accuracyScore);
-                  
+
                   return (
                     <WrapItem key={index}>
                       <VStack gap={1} align="center">
@@ -258,7 +312,21 @@ export default function ResultComponent({
                         >
                           <HStack gap={1}>
                             <Box as={errorStyle.icon} boxSize="12px" />
-                            <Text>{word.word}</Text>
+                            {errorStyle.textDecoration === "bracket" ? (
+                              <Text
+                                textDecoration={
+                                  word.errorType === "Insertion"
+                                    ? "line-through"
+                                    : ""
+                                }
+                              >
+                                [{word.word}]
+                              </Text>
+                            ) : (
+                              <Text textDecoration={errorStyle.textDecoration}>
+                                {word.word}
+                              </Text>
+                            )}
                           </HStack>
                         </Badge>
                         <Text fontSize="xs" color={textColor}>
@@ -269,9 +337,9 @@ export default function ResultComponent({
                   );
                 })}
               </Wrap>
-              
+
               {/* <Divider my={4} /> */}
-              
+
               {/* Legend */}
               <VStack align="start" gap={2}>
                 <Text fontSize="sm" fontWeight="medium" color={textColor}>
@@ -280,26 +348,38 @@ export default function ResultComponent({
                 <Wrap gap={4}>
                   <WrapItem>
                     <HStack gap={1}>
-                      <Box as={MdCheckCircle} color="green.500" boxSize="14px" />
-                      <Text fontSize="xs" color={textColor}>Correct</Text>
+                      <Box
+                        as={MdCheckCircle}
+                        color="green.500"
+                        boxSize="14px"
+                      />
+                      <Text fontSize="xs" color={textColor}>
+                        Correct
+                      </Text>
                     </HStack>
                   </WrapItem>
                   <WrapItem>
                     <HStack gap={1}>
                       <Box as={MdCancel} color="red.500" boxSize="14px" />
-                      <Text fontSize="xs" color={textColor}>Mispronounced</Text>
+                      <Text fontSize="xs" color={textColor}>
+                        Mispronounced
+                      </Text>
                     </HStack>
                   </WrapItem>
                   <WrapItem>
                     <HStack gap={1}>
-                      <Box as={MdWarning} color="orange.500" boxSize="14px" />
-                      <Text fontSize="xs" color={textColor}>Omitted</Text>
+                      <Box as={MdWarning} color="gray.500" boxSize="14px" />
+                      <Text fontSize="xs" color={textColor}>
+                        Omitted
+                      </Text>
                     </HStack>
                   </WrapItem>
                   <WrapItem>
                     <HStack gap={1}>
                       <Box as={MdWarning} color="yellow.500" boxSize="14px" />
-                      <Text fontSize="xs" color={textColor}>Extra word</Text>
+                      <Text fontSize="xs" color={textColor}>
+                        Extra word
+                      </Text>
                     </HStack>
                   </WrapItem>
                 </Wrap>
@@ -310,11 +390,7 @@ export default function ResultComponent({
 
         {/* Action Buttons */}
         <HStack gap={3} justify="center">
-          <Button
-            colorPalette="blue"
-            onClick={onStartOver}
-            size="lg"
-          >
+          <Button colorPalette="blue" onClick={onStartOver} size="lg">
             <HStack gap={2}>
               <Box as={MdRotateLeft} boxSize="18px" />
               <Text>Practice Again</Text>
