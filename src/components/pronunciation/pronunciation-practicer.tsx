@@ -9,6 +9,7 @@ import {
 import RecordingComponent from "./pronunciation-recording";
 import TextInputComponent from "./pronunciation-text-input";
 import ResultComponent from "./pronunciation-result";
+import azureResponseJson from "@/../public/azure-response-example.json"
 
 export default function PronunciationPractice() {
   const [currentStep, setCurrentStep] = useState<PracticeStep>("input");
@@ -32,9 +33,12 @@ export default function PronunciationPractice() {
     setCurrentStep("input");
   };
 
+  // TODO use spoof data for result testing
+  const azureResponse: AzurePronunciationResult = azureResponseJson as AzurePronunciationResult;
+  
   return (
     <VStack gap={6} w="100%" maxW="600px" mx="auto">
-      {currentStep === "input" ? (
+      {/* {currentStep === "input" ? (
         <TextInputComponent onSubmit={handleTextSubmit} />
       ) : currentStep === "recording" ? (
         practiceData && (
@@ -45,13 +49,13 @@ export default function PronunciationPractice() {
           />
         )
       ) : (
-        resultData && (
+        resultData && ( */}
           <ResultComponent
-            resultData={resultData}
+            resultData={azureResponse}
             onStartOver={handleStartOver}
           />
-        )
-      )}
+        {/* )
+      )} */}
     </VStack>
   );
 }
