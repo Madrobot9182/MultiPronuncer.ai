@@ -22,10 +22,11 @@ import { useRecording } from "@/hooks/useRecording";
 import { useAzureSpeech } from "@/hooks/useAzureSpeech";
 import { LANGUAGE_OPTIONS } from "@/constants/languages";
 import { useColorModeValue } from "../ui/color-mode";
+import AudioPlayer from "../ui/custom/audio-player";
 
 interface RecordingComponentProps {
   practiceData: PracticeData;
-  onAnalysisComplete: (data: AzurePronunciationResult) => void;
+  onAnalysisComplete: (data: AzurePronunciationResult, recording: Blob) => void;
   onStartOver: () => void;
 }
 
@@ -129,6 +130,7 @@ export default function RecordingComponent({
         </Box>
 
         <VStack gap={4}>
+          {recording.audioBlob && <AudioPlayer audioBlob={recording.audioBlob} filename="multipronuncer-recording"/> }
           <Center>
             <IconButton
               aria-label={

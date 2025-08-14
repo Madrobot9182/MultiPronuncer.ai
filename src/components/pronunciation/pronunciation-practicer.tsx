@@ -9,11 +9,12 @@ import {
 import RecordingComponent from "./pronunciation-recording";
 import TextInputComponent from "./pronunciation-text-input";
 import ResultComponent from "./pronunciation-result";
-import azureResponseJson from "@/../public/azure-response-example.json"
+// import azureResponseJson from "@/../public/azure-response-example.json"
 
 export default function PronunciationPractice() {
   const [currentStep, setCurrentStep] = useState<PracticeStep>("input");
   const [practiceData, setPracticeData] = useState<PracticeData | null>(null);
+  const [practiceRecording, setPracticeRecording] = useState<Blob | null>(null);
   const [resultData, setResultData] = useState<AzurePronunciationResult | null>(
     null
   );
@@ -23,8 +24,9 @@ export default function PronunciationPractice() {
     setCurrentStep("recording");
   };
 
-  const handleResultReceived = (data: AzurePronunciationResult): void => {
+  const handleResultReceived = (data: AzurePronunciationResult, recording: Blob): void => {
     setResultData(data);
+    setPracticeRecording(recording);
     setCurrentStep("results");
   };
 
@@ -32,13 +34,10 @@ export default function PronunciationPractice() {
     setPracticeData(null);
     setCurrentStep("input");
   };
-
-  // TODO use spoof data for result testing
-  const azureResponse: AzurePronunciationResult = azureResponseJson as AzurePronunciationResult;
   
   return (
     <VStack gap={6} w="100%" maxW="600px" mx="auto">
-      {/* {currentStep === "input" ? (
+      {currentStep === "input" ? (
         <TextInputComponent onSubmit={handleTextSubmit} />
       ) : currentStep === "recording" ? (
         practiceData && (
@@ -49,13 +48,14 @@ export default function PronunciationPractice() {
           />
         )
       ) : (
-        resultData && ( */}
+        resultData && practiceRecording && (
           <ResultComponent
-            resultData={azureResponse}
+            resultData={resultData}
+            resultRecording={practiceRecording}
             onStartOver={handleStartOver}
           />
-        {/* )
-      )} */}
+        )
+      )}
     </VStack>
   );
 }

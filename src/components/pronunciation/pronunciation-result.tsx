@@ -30,14 +30,17 @@ import { AzurePronunciationResult, WordResult } from "@/types/pronunciation";
 import { useColorModeValue } from "../ui/color-mode";
 import { ProgressRoot } from "../ui/progress";
 import { ProgressCircleRoot } from "../ui/progress-circle";
+import AudioPlayer from "../ui/custom/audio-player";
 
 interface PronunciationResultComponentProps {
   resultData: AzurePronunciationResult;
+  resultRecording: Blob;
   onStartOver: () => void;
 }
 
 export default function ResultComponent({
   resultData,
+  resultRecording,
   onStartOver,
 }: PronunciationResultComponentProps) {
   const bgColor = useColorModeValue("white", "gray.800");
@@ -276,6 +279,17 @@ export default function ResultComponent({
             </Card.Root>
           </GridItem>
         </Grid>
+        {/* Audio Player */}
+        <Card.Root bg={cardBg} borderRadius="md">
+          <Card.Body>
+            <VStack align="start" gap={4}>
+              <Heading size="sm" color={textColor} textAlign="left">
+                Your Recording
+              </Heading>
+              <AudioPlayer audioBlob={resultRecording} />
+            </VStack>
+          </Card.Body>
+        </Card.Root>
 
         {/* Word-by-word Analysis */}
         {resultData.words && resultData.words.length > 0 && (

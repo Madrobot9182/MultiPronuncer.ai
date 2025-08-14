@@ -10,7 +10,7 @@ export const useAzureSpeech = () => {
   const analyzePronunciation = async (
     audioBlob: Blob,
     practiceData: PracticeData,
-    onComplete?: (result: AzurePronunciationResult) => void
+    onComplete?: (result: AzurePronunciationResult, recording: Blob) => void
   ): Promise<void> => {
     setIsAnalyzing(true);
     setError(null);
@@ -23,7 +23,7 @@ export const useAzureSpeech = () => {
       );
       setResult(analysisResult);
       if (onComplete) {
-        onComplete(analysisResult);
+        onComplete(analysisResult, audioBlob);
       }
     } catch (err) {
       const errorMessage =
