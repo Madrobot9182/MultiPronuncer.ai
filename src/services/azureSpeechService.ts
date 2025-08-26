@@ -7,10 +7,13 @@ interface AzurePronunciationAssessment {
   FluencyScore: number;
   CompletenessScore: number;
   PronunciationScore: number;
+  ProsodyScore?: number; // en-US only
 }
 
 interface AzureWordResult {
   Word: string;
+  Offset: number;
+  Duration: number;
   PronunciationAssessment: {
     AccuracyScore: number;
     ErrorType: "None" | "Omission" | "Insertion" | "Mispronunciation";
@@ -19,6 +22,9 @@ interface AzureWordResult {
 
 interface AzureNBestResult {
   Confidence: number;
+  Lexical: string;
+  ITN: string;
+  MaskedITN: string;
   Display: string;
   PronunciationAssessment: AzurePronunciationAssessment;
   Words: AzureWordResult[];
@@ -26,6 +32,8 @@ interface AzureNBestResult {
 
 interface AzureResponse {
   RecognitionStatus: string;
+  Offset: number;
+  Duration: number;
   DisplayText: string;
   NBest: AzureNBestResult[];
 }
@@ -43,8 +51,20 @@ class AzureSpeechService {
       );
     }
 
-    this.speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, region);
-    this.speechConfig.speechRecognitionLanguage = "en-US";
+    this.speechConfig = sdk.SpeechConfig.fromSubscription(
+      subscriptionKey,
+      region
+    );
+
+    this.speechConfig.setProperty(
+      sdk.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs,
+      "3000"
+    );
+    this.speechConfig.setProperty(
+      sdk.PropertyId.Speech_SegmentationSilenceTimeoutMs,
+      "3000"
+    );
+    this.speechConfig.outputFormat = sdk.OutputFormat.Detailed;
   }
 
   async analyzePronunciation(
@@ -56,7 +76,7 @@ class AzureSpeechService {
 
     try {
       this.validateInputs(audioBlob, referenceText);
-      
+
       console.log("Starting pronunciation analysis:", {
         audioSize: audioBlob.size,
         audioType: audioBlob.type,
@@ -71,26 +91,28 @@ class AzureSpeechService {
       const audioConfig = await this.createAudioConfig(audioBlob);
 
       // Create speech recognizer
-      speechRecognizer = new sdk.SpeechRecognizer(this.speechConfig, audioConfig);
+      speechRecognizer = new sdk.SpeechRecognizer(
+        this.speechConfig,
+        audioConfig
+      );
 
       // Configure pronunciation assessment
-      const pronunciationConfig = new sdk.PronunciationAssessmentConfig(
+      const pronunciationConfig = this.createPronunciationConfig(
         referenceText,
-        sdk.PronunciationAssessmentGradingSystem.HundredMark,
-        sdk.PronunciationAssessmentGranularity.Phoneme,
-        false // Disable miscue detection for better accuracy
+        language
       );
       pronunciationConfig.applyTo(speechRecognizer);
 
       // Perform recognition
       const result = await this.performRecognition(speechRecognizer);
-      
+
       // Parse result
       return this.parseResult(result);
-
     } catch (error) {
       console.error("Pronunciation analysis failed:", error);
-      throw error instanceof Error ? error : new Error("Unknown error occurred");
+      throw error instanceof Error
+        ? error
+        : new Error("Unknown error occurred");
     } finally {
       // Cleanup
       if (speechRecognizer) {
@@ -108,19 +130,58 @@ class AzureSpeechService {
       throw new Error("Reference text is required");
     }
 
-    const validTypes = ["wav", "webm", "mp4", "mpeg"];
-    const isValidFormat = validTypes.some(type => audioBlob.type.includes(type));
-    
+    // More comprehensive audio format validation
+    const validTypes = [
+      "audio/wav",
+      "audio/webm",
+      "audio/mp4",
+      "audio/mpeg",
+      "audio/ogg",
+    ];
+    const isValidFormat = validTypes.some(
+      (type) =>
+        audioBlob.type === type || audioBlob.type.includes(type.split("/")[1])
+    );
+
     if (!isValidFormat) {
-      throw new Error(`Unsupported audio format: ${audioBlob.type}`);
+      console.warn(`Audio format might not be optimal: ${audioBlob.type}`);
     }
+
+    // Check minimum audio duration (at least 500ms for meaningful assessment)
+    if (audioBlob.size < 8000) {
+      // Rough estimate for very short audio
+      console.warn("Audio seems very short, results may not be reliable");
+    }
+  }
+
+  private createPronunciationConfig(
+    referenceText: string,
+    language: string
+  ): sdk.PronunciationAssessmentConfig {
+    // Enable prosody for English (US) only
+    const enableProsody = language === "en-US";
+
+    const config = new sdk.PronunciationAssessmentConfig(
+      referenceText,
+      sdk.PronunciationAssessmentGradingSystem.HundredMark,
+      sdk.PronunciationAssessmentGranularity.Phoneme,
+      true // Enable miscue detection to catch insertions/omissions
+    );
+
+    // Set additional configuration properties
+    if (enableProsody) {
+      // Enable prosody assessment for en-US
+      config.enableProsodyAssessment = true;
+    }
+
+    return config;
   }
 
   private async createAudioConfig(audioBlob: Blob): Promise<sdk.AudioConfig> {
     const audioBuffer = await audioBlob.arrayBuffer();
-    
-    // Create audio format based on blob type
-    const audioFormat = audioBlob.type.includes('wav') 
+
+    // Create audio format based on blob type TODO ensure wav?
+    const audioFormat = audioBlob.type.includes("wav")
       ? sdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
       : sdk.AudioStreamFormat.getDefaultInputFormat();
 
@@ -131,7 +192,9 @@ class AzureSpeechService {
     return sdk.AudioConfig.fromStreamInput(pushStream);
   }
 
-  private performRecognition(speechRecognizer: sdk.SpeechRecognizer): Promise<sdk.SpeechRecognitionResult> {
+  private performRecognition(
+    speechRecognizer: sdk.SpeechRecognizer
+  ): Promise<sdk.SpeechRecognitionResult> {
     return new Promise((resolve, reject) => {
       speechRecognizer.recognizeOnceAsync(
         (result) => resolve(result),
@@ -140,15 +203,21 @@ class AzureSpeechService {
     });
   }
 
-  private parseResult(result: sdk.SpeechRecognitionResult): AzurePronunciationResult {
+  private parseResult(
+    result: sdk.SpeechRecognitionResult
+  ): AzurePronunciationResult {
     // Check recognition status
     if (result.reason === sdk.ResultReason.NoMatch) {
-      throw new Error("No speech could be recognized. Please speak more clearly.");
+      throw new Error(
+        "No speech could be recognized. Please speak more clearly."
+      );
     }
 
     if (result.reason === sdk.ResultReason.Canceled) {
       const cancellation = sdk.CancellationDetails.fromResult(result);
-      throw new Error(`Recognition cancelled: ${cancellation.reason} - ${cancellation.errorDetails}`);
+      throw new Error(
+        `Recognition cancelled: ${cancellation.reason} - ${cancellation.errorDetails}`
+      );
     }
 
     if (result.reason !== sdk.ResultReason.RecognizedSpeech) {
@@ -156,8 +225,10 @@ class AzureSpeechService {
     }
 
     // Get the JSON result - this is the correct property
-    const jsonResult = result.properties.getProperty(sdk.PropertyId.SpeechServiceResponse_JsonResult);
-    
+    const jsonResult = result.properties.getProperty(
+      sdk.PropertyId.SpeechServiceResponse_JsonResult
+    );
+
     if (!jsonResult) {
       throw new Error("No pronunciation assessment data received.");
     }
@@ -166,7 +237,9 @@ class AzureSpeechService {
     try {
       azureResponse = JSON.parse(jsonResult);
     } catch (error) {
-      throw new Error(`Failed to parse pronunciation assessment result. ${error}`);
+      throw new Error(
+        `Failed to parse pronunciation assessment result. ${error}`
+      );
     }
 
     return this.transformResponse(azureResponse);
@@ -180,21 +253,34 @@ class AzureSpeechService {
     }
 
     const bestResult = response.NBest[0];
-    
+
     if (!bestResult.PronunciationAssessment) {
       throw new Error("Pronunciation assessment data missing from response.");
     }
 
     const assessment = bestResult.PronunciationAssessment;
-    console.log("Pronunciation scores:", assessment);
+    console.log("Assessment scores:", assessment);
 
-    return {
+    if (assessment.AccuracyScore === 0 && assessment.PronunciationScore > 0) {
+      console.warn(
+        "AccuracyScore is 0 but other scores exist. This might indicate an issue with audio quality or processing."
+      );
+    }
+
+    const result: AzurePronunciationResult = {
       accuracyScore: this.roundScore(assessment.AccuracyScore),
       fluencyScore: this.roundScore(assessment.FluencyScore),
       completenessScore: this.roundScore(assessment.CompletenessScore),
       pronunciationScore: this.roundScore(assessment.PronunciationScore),
       words: this.transformWords(bestResult.Words || []),
     };
+
+    // Add prosody score if available (en-US only)
+    if (assessment.ProsodyScore !== undefined) {
+      result.prosodyScore = this.roundScore(assessment.ProsodyScore);
+    }
+
+    return result;
   }
 
   private transformWords(words: AzureWordResult[]): Array<{
@@ -202,32 +288,18 @@ class AzureSpeechService {
     accuracyScore: number;
     errorType: AzureWordResult["PronunciationAssessment"]["ErrorType"];
   }> {
-    return words.map(word => ({
+    console.log("Word-level results:", words);
+    return words.map((word) => ({
       word: word.Word,
-      accuracyScore: this.roundScore(word.PronunciationAssessment.AccuracyScore),
+      accuracyScore: this.roundScore(
+        word.PronunciationAssessment.AccuracyScore
+      ),
       errorType: word.PronunciationAssessment.ErrorType,
     }));
   }
 
   private roundScore(score: number): number {
     return Math.round(Math.max(0, Math.min(100, score || 0)) * 100) / 100;
-  }
-
-  getAvailableLanguages(): string[] {
-    return [
-      "en-US", "en-GB", "en-AU", "en-CA",
-      "es-ES", "es-MX", "es-AR",
-      "fr-FR", "fr-CA",
-      "de-DE", "de-AT",
-      "it-IT",
-      "pt-BR", "pt-PT",
-      "ja-JP",
-      "ko-KR",
-      "zh-CN", "zh-TW",
-      "ru-RU",
-      "ar-SA",
-      "hi-IN"
-    ];
   }
 
   dispose(): void {

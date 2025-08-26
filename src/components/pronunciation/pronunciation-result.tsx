@@ -93,7 +93,7 @@ export default function ResultComponent({
     }
   };
 
-  const overallScore = Math.round(resultData.pronunciationScore);
+  const overallScore = resultData.accuracyScore;
   const overallColor = getScoreColor(overallScore);
 
   return (
@@ -251,10 +251,10 @@ export default function ResultComponent({
                   </Stat.Label>
                   <Stat.ValueText
                     fontSize="2xl"
-                    color={`${resultData.pronunciationScore ? getScoreColor(resultData.pronunciationScore) : "gray"}.500`}
+                    color={`${resultData.prosodyScore ? getScoreColor(resultData.prosodyScore) : "gray"}.500`}
                   >
-                    {resultData.pronunciationScore
-                      ? Math.round(resultData.pronunciationScore)
+                    {resultData.prosodyScore
+                      ? Math.round(resultData.prosodyScore)
                       : "N/A"}
                     %
                   </Stat.ValueText>

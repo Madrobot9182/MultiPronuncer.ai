@@ -14,6 +14,7 @@ export interface AzurePronunciationResult {
   fluencyScore: number;
   completenessScore: number;
   pronunciationScore: number;
+  prosodyScore?: number; // Available only for en-US
   words?: WordResult[];
 }
 

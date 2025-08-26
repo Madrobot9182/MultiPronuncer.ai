@@ -21,11 +21,11 @@ export const useRecording = () => {
     // Priority order: WAV > WebM > MP4
     const formats = [
       { mimeType: "audio/wav", fileExtension: "wav" },
-      { mimeType: "audio/webm;codecs=pcm", fileExtension: "webm" },
       { mimeType: "audio/webm;codecs=opus", fileExtension: "webm" },
+      { mimeType: "audio/webm;codecs=pcm", fileExtension: "webm" },
       { mimeType: "audio/mp4", fileExtension: "mp4" },
     ];
-
+    
     for (const format of formats) {
       if (MediaRecorder.isTypeSupported(format.mimeType)) {
         console.log(`Using audio format: ${format.mimeType}`);
@@ -33,9 +33,7 @@ export const useRecording = () => {
       }
     }
 
-    // Fallback
-    console.warn("No preferred audio format supported, using default");
-    return { mimeType: "audio/webm;codecs=opus", fileExtension: "webm" };
+    throw Error("No preferred audio format supported by MediaRecorder in your browser");
   };
 
   const startRecording = async () => {
@@ -97,7 +95,7 @@ export const useRecording = () => {
               "output.wav",
             ]);
             const data = await ffmpeg.readFile("output.wav");
-            const wavBlob = new Blob([data], { type: "audio/wav" });
+            const wavBlob = new Blob([data as BlobPart], { type: "audio/wav" });
             audioBlob = wavBlob;
             console.log(
               `Converted audio: ${audioBlob.size} bytes, type: ${audioBlob.type}`
