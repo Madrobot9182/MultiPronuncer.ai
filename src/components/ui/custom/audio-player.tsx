@@ -1,15 +1,14 @@
 import {
   Box,
-  Button,
   HStack,
   IconButton,
   Progress,
   Text,
 } from "@chakra-ui/react";
 import { FaPlay, FaPause, FaDownload } from "react-icons/fa";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useColorMode } from "../color-mode";
-import { ProgressLabel, ProgressRoot } from "../progress";
+import { ProgressRoot } from "../progress";
 
 interface AudioPlayerProps {
   audioBlob: Blob;
@@ -110,7 +109,7 @@ export default function AudioPlayer({ audioBlob, filename="multipronuncer-record
               const rect = e.currentTarget.getBoundingClientRect();
               const x = e.clientX - rect.left;
               const progress = (x / rect.width) * 100;
-              handleSeek({ target: { value: progress.toString() } } as any);
+              handleSeek({ target: { value: progress.toString() } } as ChangeEvent<HTMLInputElement>);
             }}
           >
             <Progress.Track

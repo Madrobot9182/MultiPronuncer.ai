@@ -12,8 +12,6 @@ import {
   Flex,
   Wrap,
   WrapItem,
-  ProgressCircleTrack,
-  ProgressCircleRange,
 } from "@chakra-ui/react";
 import { Card } from "@chakra-ui/react";
 import { Stat } from "@chakra-ui/react";
@@ -28,8 +26,6 @@ import {
 } from "react-icons/md";
 import { AzurePronunciationResult, WordResult } from "@/types/pronunciation";
 import { useColorModeValue } from "../ui/color-mode";
-import { ProgressRoot } from "../ui/progress";
-import { ProgressCircleRoot } from "../ui/progress-circle";
 import AudioPlayer from "../ui/custom/audio-player";
 
 interface PronunciationResultComponentProps {
@@ -139,17 +135,7 @@ export default function ResultComponent({
         <Card.Root bg={cardBg} borderRadius="xl">
           <Card.Body>
             <VStack gap={4}>
-              <Box position="relative" w="120px" h="120px">
-                <ProgressRoot
-                  value={overallScore}
-                  size="lg"
-                  colorPalette={overallColor}
-                >
-                  <ProgressCircleRoot>
-                    <ProgressCircleTrack />
-                    <ProgressCircleRange />
-                  </ProgressCircleRoot>
-                </ProgressRoot>
+              <Box w="120px" h="120px">
                 <Flex
                   position="absolute"
                   top="50%"
@@ -404,7 +390,7 @@ export default function ResultComponent({
 
         {/* Action Buttons */}
         <HStack gap={3} justify="center">
-          <Button colorPalette="blue" onClick={onStartOver} size="lg">
+          <Button colorPalette="gray" onClick={onStartOver} size="lg">
             <HStack gap={2}>
               <Box as={MdRotateLeft} boxSize="18px" />
               <Text>Practice Again</Text>
