@@ -27,6 +27,7 @@ import {
 import { AzurePronunciationResult, WordResult } from "@/types/pronunciation";
 import { useColorModeValue } from "../ui/color-mode";
 import AudioPlayer from "../ui/custom/audio-player";
+import SemiCircleProgress from "../ui/custom/progress-semicircle";
 
 interface PronunciationResultComponentProps {
   resultData: AzurePronunciationResult;
@@ -135,7 +136,8 @@ export default function ResultComponent({
         <Card.Root bg={cardBg} borderRadius="xl">
           <Card.Body>
             <VStack gap={4}>
-              <Box w="120px" h="120px">
+              <Box minH="120px">
+                <SemiCircleProgress score={overallScore}/>
                 <Flex
                   position="absolute"
                   top="50%"
@@ -390,7 +392,7 @@ export default function ResultComponent({
 
         {/* Action Buttons */}
         <HStack gap={3} justify="center">
-          <Button colorPalette="gray" onClick={onStartOver} size="lg">
+          <Button colorPalette="blue" onClick={onStartOver} size="lg" variant="surface">
             <HStack gap={2}>
               <Box as={MdRotateLeft} boxSize="18px" />
               <Text>Practice Again</Text>

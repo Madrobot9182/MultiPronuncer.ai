@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   VStack,
   Box,
@@ -37,7 +37,7 @@ export default function RecordingComponent({
 }: RecordingComponentProps) {
   const recording = useRecording();
   const { isAnalyzing, analyzePronunciation } = useAzureSpeech();
-
+  const [ isSubmitting, setSubmitting ] = useState(false);
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
@@ -49,8 +49,10 @@ export default function RecordingComponent({
   const handleRecordingToggle = async (): Promise<void> => {
     try {
       if (recording.isRecording) {
+        setSubmitting(true);
         await recording.stopRecording();
       } else {
+        setSubmitting(false);
         await recording.startRecording();
       }
     } catch (error) {
@@ -141,6 +143,7 @@ export default function RecordingComponent({
               variant={recording.isRecording ? "solid" : "outline"}
               rounded="full"
               onClick={handleRecordingToggle}
+              loading={isSubmitting && !recording.hasRecorded}
               _hover={{
                 transform: "scale(1.05)",
               }}

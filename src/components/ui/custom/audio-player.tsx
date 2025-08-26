@@ -91,6 +91,7 @@ export default function AudioPlayer({ audioBlob, filename="multipronuncer-record
             onClick={handlePlayPause}
             size="sm"
             rounded="full"
+            variant="surface"
           >
             {playing ? <FaPause /> : <FaPlay />}
           </IconButton>
@@ -122,7 +123,7 @@ export default function AudioPlayer({ audioBlob, filename="multipronuncer-record
             </Progress.Track>
           </ProgressRoot>
         </Box>
-        <IconButton onClick={handleDownload} size="sm" rounded="full">
+        <IconButton onClick={handleDownload} size="sm" rounded="full" variant="surface">
           <FaDownload />
         </IconButton>
       </HStack>

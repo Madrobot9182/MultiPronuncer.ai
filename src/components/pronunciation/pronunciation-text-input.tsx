@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "../ui/select";
+import { RiArrowRightLine } from "react-icons/ri"
 import { EN_US_EXAMPLEPARAGRAPHS } from "@/constants/examples";
 
 interface TextInputComponentProps {
@@ -85,7 +86,7 @@ export default function TextInputComponent({
           <HStack gap={12}>
             <SimpleGrid columns={3} row={2} gap={2} flex={1}>
               {exampleParagraphs.slice(0,3).map((example, index) => (
-                <Button key={index} size="xs" onClick={() => handleInsertText(example.text)}>
+                <Button key={index} size="xs" variant="surface" onClick={() => handleInsertText(example.text)}>
                   {example.label}
                 </Button>
               ))}
@@ -136,12 +137,12 @@ export default function TextInputComponent({
             {text.length}/{MAX_TEXT_CHARACTERS} characters
           </Text>
           <Button
-            colorScheme="blue"
+            colorPalette="gray"
             onClick={handleSubmit}
             disabled={isSubmitDisabled}
             size="md"
           >
-            Start Practice
+            Start Practice <RiArrowRightLine />
           </Button>
         </Flex>
       </VStack>
