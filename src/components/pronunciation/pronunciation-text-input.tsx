@@ -11,18 +11,11 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { PracticeData } from "@/types/pronunciation";
-import { LANGUAGE_OPTIONS, MAX_TEXT_CHARACTERS } from "@/constants/languages";
+import { PRONUNCIATION_LANGUAGES, MAX_TEXT_CHARACTERS, LanguageOption } from "@/constants/languages";
 import { useColorModeValue } from "../ui/color-mode";
-import {
-  SelectContent,
-  SelectItem,
-  SelectItemText,
-  SelectRoot,
-  SelectTrigger,
-  SelectValueText,
-} from "../ui/select";
 import { RiArrowRightLine } from "react-icons/ri"
 import { EN_US_EXAMPLEPARAGRAPHS } from "@/constants/examples";
+import LanguageDropdown from "../ui/custom/language-menu";
 
 interface TextInputComponentProps {
   onSubmit: (data: PracticeData) => void;
@@ -34,9 +27,9 @@ export default function TextInputComponent({
   const [text, setText] = useState<string>("");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("en-US");
 
-  const languageCollection = createListCollection({
-    items: LANGUAGE_OPTIONS,
-  });
+  // const languageCollection = createListCollection({
+  //   items: PRONUNCIATION_LANGUAGES,
+  // });
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -58,9 +51,9 @@ export default function TextInputComponent({
     }
   };
 
-  const handleLanguageChange = (details: { value: string[] }): void => {
-    if (details.value.length > 0) {
-      setSelectedLanguage(details.value[0]);
+  const handleLanguageChange = (language: LanguageOption): void => {
+    if (language.value.length) {
+      setSelectedLanguage(language.value);
     }
   };
 
@@ -91,23 +84,7 @@ export default function TextInputComponent({
                 </Button>
               ))}
             </SimpleGrid>
-          <SelectRoot
-            collection={languageCollection}
-            value={[selectedLanguage]}
-            onValueChange={handleLanguageChange}
-            flex={1}
-          >
-            <SelectTrigger bg={useColorModeValue("white", "gray.700")}>
-              <SelectValueText placeholder="Select a language" />
-            </SelectTrigger>
-            <SelectContent>
-              {languageCollection.items.map((option) => (
-                <SelectItem key={option.value} item={option}>
-                  <SelectItemText>{option.label}</SelectItemText>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </SelectRoot>
+              <LanguageDropdown selectedLanguage="en-US" onLanguageSelect={handleLanguageChange} placeholder="English (United States)" size="md" />
           </HStack>
         </Box>
 

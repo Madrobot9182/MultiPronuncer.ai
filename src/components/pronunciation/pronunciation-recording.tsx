@@ -20,7 +20,7 @@ import {
 import { AzurePronunciationResult, PracticeData } from "@/types/pronunciation";
 import { useRecording } from "@/hooks/useRecording";
 import { useAzureSpeech } from "@/hooks/useAzureSpeech";
-import { LANGUAGE_OPTIONS } from "@/constants/languages";
+import { PRONUNCIATION_LANGUAGES } from "@/constants/languages";
 import { useColorModeValue } from "../ui/color-mode";
 import AudioPlayer from "../ui/custom/audio-player";
 
@@ -43,7 +43,7 @@ export default function RecordingComponent({
   const textColor = useColorModeValue("gray.600", "gray.300");
 
   const selectedLanguageLabel =
-    LANGUAGE_OPTIONS.find((lang) => lang.value === practiceData.language)
+    PRONUNCIATION_LANGUAGES.find((lang) => lang.value === practiceData.language)  // TODO improve the pop down for selecting language
       ?.label || practiceData.language;
 
   const handleRecordingToggle = async (): Promise<void> => {
