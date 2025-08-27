@@ -43,7 +43,7 @@ export default function RecordingComponent({
   const textColor = useColorModeValue("gray.600", "gray.300");
 
   const selectedLanguageLabel =
-    PRONUNCIATION_LANGUAGES.find((lang) => lang.value === practiceData.language)  // TODO improve the pop down for selecting language
+    PRONUNCIATION_LANGUAGES.find((lang) => lang.value === practiceData.language)
       ?.label || practiceData.language;
 
   const handleRecordingToggle = async (): Promise<void> => {

@@ -1,4 +1,4 @@
-// src/services/azureSpeechService.ts
+import { getProsodySupportedLanguages } from "@/constants/languages";
 import { AzurePronunciationResult } from "@/types/pronunciation";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
@@ -158,8 +158,7 @@ class AzureSpeechService {
     referenceText: string,
     language: string
   ): sdk.PronunciationAssessmentConfig {
-    // Enable prosody for English (US) only
-    const enableProsody = language === "en-US";
+    const enableProsody = language in getProsodySupportedLanguages();
 
     const config = new sdk.PronunciationAssessmentConfig(
       referenceText,
@@ -170,7 +169,6 @@ class AzureSpeechService {
 
     // Set additional configuration properties
     if (enableProsody) {
-      // Enable prosody assessment for en-US
       config.enableProsodyAssessment = true;
     }
 
@@ -179,8 +177,6 @@ class AzureSpeechService {
 
   private async createAudioConfig(audioBlob: Blob): Promise<sdk.AudioConfig> {
     const audioBuffer = await audioBlob.arrayBuffer();
-
-    // Create audio format based on blob type TODO ensure wav?
     const audioFormat = audioBlob.type.includes("wav")
       ? sdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
       : sdk.AudioStreamFormat.getDefaultInputFormat();
