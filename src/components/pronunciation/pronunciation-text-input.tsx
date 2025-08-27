@@ -6,7 +6,6 @@ import {
   Textarea,
   Button,
   Flex,
-  createListCollection,
   HStack,
   SimpleGrid,
 } from "@chakra-ui/react";
@@ -84,7 +83,7 @@ export default function TextInputComponent({
                 </Button>
               ))}
             </SimpleGrid>
-              <LanguageDropdown selectedLanguage="en-US" onLanguageSelect={handleLanguageChange} placeholder="English (United States)" size="md" />
+              <LanguageDropdown onLanguageSelect={handleLanguageChange} allLanguages={PRONUNCIATION_LANGUAGES} size="md" />
           </HStack>
         </Box>
 

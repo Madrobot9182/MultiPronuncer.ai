@@ -3,20 +3,16 @@ import {
   Box,
   Button,
   Input,
-  InputGroup,
   Stack,
   Text,
   Popover,
   PopoverTrigger,
   PopoverContent,
-  PopoverBody,
   Badge,
   SimpleGrid,
   IconButton,
   useDisclosure,
   Flex,
-  HStack,
-  VStack,
 } from "@chakra-ui/react";
 import {
   FiSearch,
@@ -28,117 +24,13 @@ import {
 } from "react-icons/fi";
 import { FaGlobe, FaStar, FaLanguage } from "react-icons/fa";
 import { useColorModeValue } from "../color-mode";
-import { LanguageOption } from "@/constants/languages";
-
-// Mock language data - replace with your actual constants
-const POPULAR_LANGUAGES = [
-  { value: "en-US", label: "English (United States)", region: "Americas" },
-  { value: "en-GB", label: "English (United Kingdom)", region: "Europe" },
-  { value: "es-ES", label: "Spanish (Spain)", region: "Europe" },
-  { value: "es-MX", label: "Spanish (Mexico)", region: "Americas" },
-  { value: "fr-FR", label: "French (France)", region: "Europe" },
-  { value: "de-DE", label: "German (Germany)", region: "Europe" },
-  { value: "it-IT", label: "Italian (Italy)", region: "Europe" },
-  { value: "pt-BR", label: "Portuguese (Brazil)", region: "Americas" },
-  { value: "ja-JP", label: "Japanese (Japan)", region: "Asia Pacific" },
-  { value: "ko-KR", label: "Korean (South Korea)", region: "Asia Pacific" },
-];
-
-const MAJOR_LANGUAGE_GROUPS = {
-  English: [
-    { value: "en-US", label: "English (United States)", region: "Americas" },
-    { value: "en-GB", label: "English (United Kingdom)", region: "Europe" },
-    { value: "en-AU", label: "English (Australia)", region: "Asia Pacific" },
-    { value: "en-CA", label: "English (Canada)", region: "Americas" },
-    { value: "en-IN", label: "English (India)", region: "Asia Pacific" },
-    { value: "en-IE", label: "English (Ireland)", region: "Europe" },
-    { value: "en-NZ", label: "English (New Zealand)", region: "Asia Pacific" },
-    { value: "en-ZA", label: "English (South Africa)", region: "Africa" },
-    { value: "en-SG", label: "English (Singapore)", region: "Asia Pacific" },
-    { value: "en-PH", label: "English (Philippines)", region: "Asia Pacific" },
-  ],
-  Spanish: [
-    { value: "es-ES", label: "Spanish (Spain)", region: "Europe" },
-    { value: "es-MX", label: "Spanish (Mexico)", region: "Americas" },
-    { value: "es-AR", label: "Spanish (Argentina)", region: "Americas" },
-    { value: "es-CO", label: "Spanish (Colombia)", region: "Americas" },
-    { value: "es-CL", label: "Spanish (Chile)", region: "Americas" },
-    { value: "es-PE", label: "Spanish (Peru)", region: "Americas" },
-    { value: "es-VE", label: "Spanish (Venezuela)", region: "Americas" },
-    { value: "es-EC", label: "Spanish (Ecuador)", region: "Americas" },
-    { value: "es-GT", label: "Spanish (Guatemala)", region: "Americas" },
-    { value: "es-UR", label: "Spanish (Uruguay)", region: "Americas" },
-  ],
-  French: [
-    { value: "fr-FR", label: "French (France)", region: "Europe" },
-    { value: "fr-CA", label: "French (Canada)", region: "Americas" },
-    { value: "fr-BE", label: "French (Belgium)", region: "Europe" },
-    { value: "fr-CH", label: "French (Switzerland)", region: "Europe" },
-  ],
-  German: [
-    { value: "de-DE", label: "German (Germany)", region: "Europe" },
-    { value: "de-AT", label: "German (Austria)", region: "Europe" },
-    { value: "de-CH", label: "German (Switzerland)", region: "Europe" },
-  ],
-  Portuguese: [
-    { value: "pt-BR", label: "Portuguese (Brazil)", region: "Americas" },
-    { value: "pt-PT", label: "Portuguese (Portugal)", region: "Europe" },
-  ],
-  Arabic: [
-    { value: "ar-SA", label: "Arabic (Saudi Arabia)", region: "Middle East" },
-    { value: "ar-EG", label: "Arabic (Egypt)", region: "Middle East" },
-    { value: "ar-AE", label: "Arabic (UAE)", region: "Middle East" },
-    { value: "ar-MA", label: "Arabic (Morocco)", region: "Middle East" },
-    { value: "ar-JO", label: "Arabic (Jordan)", region: "Middle East" },
-    { value: "ar-LB", label: "Arabic (Lebanon)", region: "Middle East" },
-  ],
-};
-
-const ALL_LANGUAGES = [
-  ...POPULAR_LANGUAGES,
-  {
-    value: "zh-CN",
-    label: "Chinese (Mandarin, Simplified)",
-    region: "Asia Pacific",
-  },
-  { value: "zh-TW", label: "Chinese (Traditional)", region: "Asia Pacific" },
-  { value: "ru-RU", label: "Russian (Russia)", region: "Europe" },
-  { value: "hi-IN", label: "Hindi (India)", region: "Asia Pacific" },
-  { value: "ar-SA", label: "Arabic (Saudi Arabia)", region: "Middle East" },
-  { value: "bn-IN", label: "Bengali (India)", region: "Asia Pacific" },
-  { value: "th-TH", label: "Thai (Thailand)", region: "Asia Pacific" },
-  { value: "vi-VN", label: "Vietnamese (Vietnam)", region: "Asia Pacific" },
-  { value: "tr-TR", label: "Turkish (Turkey)", region: "Europe" },
-  { value: "pl-PL", label: "Polish (Poland)", region: "Europe" },
-  { value: "nl-NL", label: "Dutch (Netherlands)", region: "Europe" },
-  { value: "sv-SE", label: "Swedish (Sweden)", region: "Europe" },
-  { value: "da-DK", label: "Danish (Denmark)", region: "Europe" },
-  { value: "no-NO", label: "Norwegian (Norway)", region: "Europe" },
-  { value: "fi-FI", label: "Finnish (Finland)", region: "Europe" },
-  { value: "cs-CZ", label: "Czech (Czech Republic)", region: "Europe" },
-  { value: "hu-HU", label: "Hungarian (Hungary)", region: "Europe" },
-  { value: "ro-RO", label: "Romanian (Romania)", region: "Europe" },
-  { value: "bg-BG", label: "Bulgarian (Bulgaria)", region: "Europe" },
-  { value: "hr-HR", label: "Croatian (Croatia)", region: "Europe" },
-  { value: "sk-SK", label: "Slovak (Slovakia)", region: "Europe" },
-  { value: "sl-SI", label: "Slovenian (Slovenia)", region: "Europe" },
-  { value: "et-EE", label: "Estonian (Estonia)", region: "Europe" },
-  { value: "lv-LV", label: "Latvian (Latvia)", region: "Europe" },
-  { value: "lt-LT", label: "Lithuanian (Lithuania)", region: "Europe" },
-  { value: "el-GR", label: "Greek (Greece)", region: "Europe" },
-  { value: "he-IL", label: "Hebrew (Israel)", region: "Middle East" },
-  { value: "fa-IR", label: "Persian (Iran)", region: "Middle East" },
-  { value: "ur-PK", label: "Urdu (Pakistan)", region: "Asia Pacific" },
-  { value: "id-ID", label: "Indonesian (Indonesia)", region: "Asia Pacific" },
-  { value: "ms-MY", label: "Malay (Malaysia)", region: "Asia Pacific" },
-  { value: "tl-PH", label: "Filipino (Philippines)", region: "Asia Pacific" },
-  { value: "sw-KE", label: "Swahili (Kenya)", region: "Africa" },
-  { value: "am-ET", label: "Amharic (Ethiopia)", region: "Africa" },
-  { value: "yo-NG", label: "Yoruba (Nigeria)", region: "Africa" },
-  { value: "ig-NG", label: "Igbo (Nigeria)", region: "Africa" },
-  { value: "zu-ZA", label: "Zulu (South Africa)", region: "Africa" },
-  { value: "af-ZA", label: "Afrikaans (South Africa)", region: "Africa" },
-];
+import {
+  getLanguagesByRegion,
+  LanguageOption,
+  MAJOR_REGION_LANGUAGES,
+  POPULAR_LANGUAGES,
+  REGIONS,
+} from "@/constants/languages";
 
 const FILTER_TYPES = {
   ALL: "all",
@@ -147,26 +39,26 @@ const FILTER_TYPES = {
   REGION: "region",
 };
 
-const REGIONS = ["Americas", "Europe", "Asia Pacific", "Middle East", "Africa"];
-
 interface LanguageDropdownProps {
-  selectedLanguage?: string;
   onLanguageSelect: (language: LanguageOption) => void;
+  allLanguages: LanguageOption[];
+  selectedLanguage?: string;
   placeholder?: string;
   size?: "sm" | "md" | "lg";
 }
 
 export default function LanguageDropdown({
-  selectedLanguage,
   onLanguageSelect,
-  placeholder = "Select Language",
+  allLanguages,
+  selectedLanguage = "en-US",
+  placeholder = "English (United States)",
   size = "md",
-}: LanguageDropdownProps)
- {
+}: LanguageDropdownProps) {
   const { open, onToggle, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState(FILTER_TYPES.ALL);
-  const [selectedLanguageLabel, setSelectedLanguageLabel] = useState<string>(placeholder);
+  const [selectedLanguageLabel, setSelectedLanguageLabel] =
+    useState<string>(placeholder);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -193,19 +85,17 @@ export default function LanguageDropdown({
         languages = POPULAR_LANGUAGES;
         break;
       case FILTER_TYPES.MAJOR_VARIANTS:
-        languages = Object.values(MAJOR_LANGUAGE_GROUPS).flat();
+        languages = Object.values(MAJOR_REGION_LANGUAGES).flat();
         break;
       case FILTER_TYPES.REGION:
         if (selectedRegion) {
-          languages = ALL_LANGUAGES.filter(
-            (lang) => lang.region === selectedRegion
-          );
+          languages = getLanguagesByRegion(allLanguages, selectedRegion);
         } else {
-          languages = ALL_LANGUAGES;
+          languages = allLanguages;
         }
         break;
       default:
-        languages = ALL_LANGUAGES;
+        languages = allLanguages;
     }
 
     if (searchTerm) {
@@ -217,18 +107,18 @@ export default function LanguageDropdown({
     }
 
     return languages;
-  }, [activeFilter, selectedRegion, searchTerm]);
+  }, [activeFilter, searchTerm, selectedRegion, allLanguages]);
 
   const groupedLanguages = useMemo(() => {
     if (activeFilter === FILTER_TYPES.MAJOR_VARIANTS && !searchTerm) {
-      return MAJOR_LANGUAGE_GROUPS;
+      return MAJOR_REGION_LANGUAGES;
     }
     return null;
   }, [activeFilter, searchTerm]);
 
   const handleLanguageSelect = (language: LanguageOption) => {
     onLanguageSelect(language);
-    setSelectedLanguageLabel(language.label)
+    setSelectedLanguageLabel(language.label);
     onClose();
     setSearchTerm("");
   };
@@ -259,10 +149,10 @@ export default function LanguageDropdown({
     <Popover.Root
       open={open}
       onOpenChange={onToggle}
-      positioning={{ 
+      positioning={{
         placement: "bottom-start",
         strategy: "fixed", // This makes it overlay instead of pushing content
-        offset: { mainAxis: 4 }
+        offset: { mainAxis: 4 },
       }}
       closeOnInteractOutside={true}
       modal={false} // Ensures it doesn't block interaction with the rest of the page
@@ -353,17 +243,6 @@ export default function LanguageDropdown({
             <Flex gap={2} flexWrap="wrap">
               <Button
                 size="xs"
-                variant={activeFilter === FILTER_TYPES.ALL ? "solid" : "ghost"}
-                colorScheme={
-                  activeFilter === FILTER_TYPES.ALL ? "blue" : "gray"
-                }
-                onClick={() => handleFilterChange(FILTER_TYPES.ALL)}
-              >
-                <FaLanguage size={12} style={{ marginRight: 4 }} />
-                All Languages
-              </Button>
-              <Button
-                size="xs"
                 variant={
                   activeFilter === FILTER_TYPES.POPULAR ? "solid" : "ghost"
                 }
@@ -374,6 +253,17 @@ export default function LanguageDropdown({
               >
                 <FaStar size={12} style={{ marginRight: 4 }} />
                 Popular
+              </Button>
+              <Button
+                size="xs"
+                variant={activeFilter === FILTER_TYPES.ALL ? "solid" : "ghost"}
+                colorScheme={
+                  activeFilter === FILTER_TYPES.ALL ? "blue" : "gray"
+                }
+                onClick={() => handleFilterChange(FILTER_TYPES.ALL)}
+              >
+                <FaLanguage size={12} style={{ marginRight: 4 }} />
+                All Languages
               </Button>
               <Button
                 size="xs"

@@ -6,8 +6,84 @@ export interface LanguageOption {
 
 export const MAX_TEXT_CHARACTERS = 500;
 
-// PRONUNCIATION ASSESSMENT - Languages with pronunciation support
-// Based on Azure Speech Service pronunciation assessment capabilities
+export const MAJOR_REGION_LANGUAGES: { [key: string]: LanguageOption[] } = {
+  English: [
+    { value: 'en-US', label: 'English (United States)', region: 'Americas' },
+    { value: 'en-GB', label: 'English (United Kingdom)', region: 'Europe' },
+    { value: 'en-AU', label: 'English (Australia)', region: 'Asia Pacific' },
+    { value: 'en-CA', label: 'English (Canada)', region: 'Americas' },
+    { value: 'en-HK', label: 'English (Hong Kong)', region: 'Asia Pacific' },
+    { value: 'en-IE', label: 'English (Ireland)', region: 'Europe' },
+    { value: 'en-IN', label: 'English (India)', region: 'Asia Pacific' },
+    { value: 'en-KE', label: 'English (Kenya)', region: 'Africa' },
+    { value: 'en-NG', label: 'English (Nigeria)', region: 'Africa' },
+    { value: 'en-NZ', label: 'English (New Zealand)', region: 'Asia Pacific' },
+    { value: 'en-PH', label: 'English (Philippines)', region: 'Asia Pacific' },
+    { value: 'en-SG', label: 'English (Singapore)', region: 'Asia Pacific' },
+    { value: 'en-TZ', label: 'English (Tanzania)', region: 'Africa' },
+    { value: 'en-ZA', label: 'English (South Africa)', region: 'Africa' },
+    { value: 'en-GH', label: 'English (Ghana)', region: 'Africa' },
+  ],
+  Spanish:[
+    { value: 'es-ES', label: 'Spanish (Spain)', region: 'Europe' },
+    { value: 'es-MX', label: 'Spanish (Mexico)', region: 'Americas' },
+    { value: 'es-AR', label: 'Spanish (Argentina)', region: 'Americas' },
+    { value: 'es-BO', label: 'Spanish (Bolivia)', region: 'Americas' },
+    { value: 'es-CL', label: 'Spanish (Chile)', region: 'Americas' },
+    { value: 'es-CO', label: 'Spanish (Colombia)', region: 'Americas' },
+    { value: 'es-CR', label: 'Spanish (Costa Rica)', region: 'Americas' },
+    { value: 'es-CU', label: 'Spanish (Cuba)', region: 'Americas' },
+    { value: 'es-DO', label: 'Spanish (Dominican Republic)', region: 'Americas' },
+    { value: 'es-EC', label: 'Spanish (Ecuador)', region: 'Americas' },
+    { value: 'es-GT', label: 'Spanish (Guatemala)', region: 'Americas' },
+    { value: 'es-HN', label: 'Spanish (Honduras)', region: 'Americas' },
+    { value: 'es-NI', label: 'Spanish (Nicaragua)', region: 'Americas' },
+    { value: 'es-PA', label: 'Spanish (Panama)', region: 'Americas' },
+    { value: 'es-PE', label: 'Spanish (Peru)', region: 'Americas' },
+    { value: 'es-PR', label: 'Spanish (Puerto Rico)', region: 'Americas' },
+    { value: 'es-PY', label: 'Spanish (Paraguay)', region: 'Americas' },
+    { value: 'es-SV', label: 'Spanish (El Salvador)', region: 'Americas' },
+    { value: 'es-US', label: 'Spanish (United States)', region: 'Americas' },
+    { value: 'es-UY', label: 'Spanish (Uruguay)', region: 'Americas' },
+    { value: 'es-VE', label: 'Spanish (Venezuela)', region: 'Americas' },
+  ],
+  French:[
+    { value: 'fr-FR', label: 'French (France)', region: 'Europe' },
+    { value: 'fr-CA', label: 'French (Canada)', region: 'Americas' },
+    { value: 'fr-CH', label: 'French (Switzerland)', region: 'Europe' },
+  ],
+  German:[
+    { value: 'de-DE', label: 'German (Germany)', region: 'Europe' },
+    { value: 'de-AT', label: 'German (Austria)', region: 'Europe' },
+    { value: 'de-CH', label: 'German (Switzerland)', region: 'Europe' },
+  ],
+  Portuguese: [
+    { value: "pt-BR", label: "Portuguese (Brazil)", region: "Americas" },
+    { value: "pt-PT", label: "Portuguese (Portugal)", region: "Europe" },
+  ],
+  // arabic not supported pronunciation
+  Arabic: [
+    { value: 'ar-AE', label: 'Arabic (United Arab Emirates)', region: 'Middle East' },
+    { value: 'ar-BH', label: 'Arabic (Bahrain)', region: 'Middle East' },
+    { value: 'ar-DZ', label: 'Arabic (Algeria)', region: 'Middle East' },
+    { value: 'ar-EG', label: 'Arabic (Egypt)', region: 'Middle East' },
+    { value: 'ar-IL', label: 'Arabic (Israel)', region: 'Middle East' },
+    { value: 'ar-IQ', label: 'Arabic (Iraq)', region: 'Middle East' },
+    { value: 'ar-JO', label: 'Arabic (Jordan)', region: 'Middle East' },
+    { value: 'ar-KW', label: 'Arabic (Kuwait)', region: 'Middle East' },
+    { value: 'ar-LB', label: 'Arabic (Lebanon)', region: 'Middle East' },
+    { value: 'ar-LY', label: 'Arabic (Libya)', region: 'Middle East' },
+    { value: 'ar-MA', label: 'Arabic (Morocco)', region: 'Middle East' },
+    { value: 'ar-OM', label: 'Arabic (Oman)', region: 'Middle East' },
+    { value: 'ar-PS', label: 'Arabic (Palestinian Authority)', region: 'Middle East' },
+    { value: 'ar-QA', label: 'Arabic (Qatar)', region: 'Middle East' },
+    { value: 'ar-SA', label: 'Arabic (Saudi Arabia)', region: 'Middle East' },
+    { value: 'ar-SY', label: 'Arabic (Syria)', region: 'Middle East' },
+    { value: 'ar-TN', label: 'Arabic (Tunisia)', region: 'Middle East' },
+    { value: 'ar-YE', label: 'Arabic (Yemen)', region: 'Middle East' },
+  ],
+};
+
 export const PRONUNCIATION_LANGUAGES: LanguageOption[] = [
   // English variants (most comprehensive support)
   { value: 'en-US', label: 'English (United States)', region: 'Americas' },
@@ -402,10 +478,16 @@ export const TRANSLATION_LANGUAGES: LanguageOption[] = [
   { value: 'zu', label: 'Zulu' },
 ];
 
+export const REGIONS = ["Americas", "Europe", "Asia Pacific", "Middle East", "Africa"];
+
 // Helper functions to get languages by specific criteria
-export const getLanguagesByRegion = (languages: LanguageOption[], region: string): LanguageOption[] => {
+export const getLanguagesByRegion = (languages: LanguageOption[], region: string): LanguageOption[]=> {
   return languages.filter(lang => lang.region === region);
 };
+
+export const getLanguageLabelByValue = (languages: LanguageOption[], value: string): LanguageOption | undefined => {
+  return languages.find(lang => lang.value === value);
+}
 
 export const getProsodySupportedLanguages = (): string[] => {
   return ['en-US']; // Currently only en-US supports prosody assessment
