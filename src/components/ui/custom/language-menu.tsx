@@ -178,8 +178,8 @@ export default function LanguageDropdown({
       </PopoverTrigger>
 
       <PopoverContent
-        w="480px"
-        maxH="500px"
+        w="660px"
+        maxH="800px"
         bg={bg}
         borderColor={borderColor}
         shadow="2xl" // Increased shadow for better overlay effect
@@ -309,7 +309,7 @@ export default function LanguageDropdown({
           </Box>
 
           {/* Language List */}
-          <Box maxH="300px" overflowY="auto" p={2}>
+          <Box maxH="600px" overflowY="auto" p={2}>
             {groupedLanguages ? (
               // Grouped view for major variants
               <Stack gap={1} align="stretch">

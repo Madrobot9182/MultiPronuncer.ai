@@ -9,11 +9,16 @@ import {
   HStack,
   SimpleGrid,
 } from "@chakra-ui/react";
+import { BsTextParagraph } from "react-icons/bs";
 import { PracticeData } from "@/types/pronunciation";
-import { PRONUNCIATION_LANGUAGES, MAX_TEXT_CHARACTERS, LanguageOption } from "@/constants/languages";
+import {
+  PRONUNCIATION_LANGUAGES,
+  MAX_TEXT_CHARACTERS,
+  LanguageOption,
+} from "@/constants/languages";
 import { useColorModeValue } from "../ui/color-mode";
-import { RiArrowRightLine } from "react-icons/ri"
-import { EN_US_EXAMPLEPARAGRAPHS } from "@/constants/examples";
+import { RiArrowRightLine } from "react-icons/ri";
+import { fetchExampleParagraphs } from "@/constants/examples";
 import LanguageDropdown from "../ui/custom/language-menu";
 
 interface TextInputComponentProps {
@@ -25,7 +30,9 @@ export default function TextInputComponent({
 }: TextInputComponentProps) {
   const [text, setText] = useState<string>("");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("en-US");
-
+  const [exampleParagraphs, setExampleParagraphs] = useState<string[]>(
+    fetchExampleParagraphs("en-US")
+  );
   // const languageCollection = createListCollection({
   //   items: PRONUNCIATION_LANGUAGES,
   // });
@@ -33,8 +40,7 @@ export default function TextInputComponent({
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
-  const exampleParagraphs = EN_US_EXAMPLEPARAGRAPHS;   // TODO determine based on selected language
-  
+
   const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
     if (e.target.value.length <= MAX_TEXT_CHARACTERS) {
       setText(e.target.value);
@@ -53,12 +59,13 @@ export default function TextInputComponent({
   const handleLanguageChange = (language: LanguageOption): void => {
     if (language.value.length) {
       setSelectedLanguage(language.value);
+      setExampleParagraphs(fetchExampleParagraphs(language.value));
     }
   };
 
-    const handleInsertText = (text: string) => {
+  const handleInsertText = (text: string) => {
     // Insert the text into your textbox here
-    setText(text)
+    setText(text);
   };
 
   const isSubmitDisabled: boolean = !text.trim();
@@ -76,14 +83,28 @@ export default function TextInputComponent({
       <VStack gap={4} align="stretch">
         <Box>
           <HStack gap={12}>
+            {exampleParagraphs.length ? 
             <SimpleGrid columns={3} row={2} gap={2} flex={1}>
-              {exampleParagraphs.slice(0,3).map((example, index) => (
-                <Button key={index} size="xs" variant="surface" onClick={() => handleInsertText(example.text)}>
-                  {example.label}
-                </Button>
-              ))}
-            </SimpleGrid>
-              <LanguageDropdown onLanguageSelect={handleLanguageChange} allLanguages={PRONUNCIATION_LANGUAGES} size="md" />
+              {(
+                exampleParagraphs.slice(0, 3).map((example, index) => (
+                  <Button
+                    key={index}
+                    size="xs"
+                    variant="surface"
+                    onClick={() => handleInsertText(example)}
+                  >
+                    Sample {index + 1} <BsTextParagraph />
+                  </Button>
+                ))
+              )} 
+            </SimpleGrid> : 
+                <Text fontSize={18} flex={1}>No Samples Available</Text>
+              }
+            <LanguageDropdown
+              onLanguageSelect={handleLanguageChange}
+              allLanguages={PRONUNCIATION_LANGUAGES}
+              size="md"
+            />
           </HStack>
         </Box>
 
