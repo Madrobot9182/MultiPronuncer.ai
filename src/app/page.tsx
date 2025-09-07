@@ -6,6 +6,7 @@ import { SpeechServices } from "@/types/services";
 import { useState } from "react";
 import PronunciationPractice from "@/components/pronunciation/pronunciation-practicer";
 import MultiPronuncerLogo from "@/components/ui/custom/mpai-logo";
+import translationInterface from "@/components/translation/translation-interface";
 
 type ComponentMap = {
   [key in SpeechServices]: React.ComponentType;
@@ -13,7 +14,7 @@ type ComponentMap = {
 
 const componentMap: ComponentMap = {
   pronunciation: PronunciationPractice,
-  translate: PronunciationPractice, // TODO
+  translate: translationInterface,
   tts: PronunciationPractice, // TODO
 };
 

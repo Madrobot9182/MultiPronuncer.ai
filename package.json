@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@azure-rest/ai-translation-text": "^1.0.1",
     "@chakra-ui/react": "^3.22.0",
     "@emotion/react": "^11.14.0",
     "@ffmpeg/ffmpeg": "^0.12.15",
