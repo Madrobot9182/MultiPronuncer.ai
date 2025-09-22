@@ -135,7 +135,7 @@ export const useTranslation = (): UseTranslationReturn => {
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [translationState.sourceText, translationState.sourceLanguage, translationState.targetLanguage, performTranslation, translationState]);
+  }, [translationState.sourceText, translationState.sourceLanguage, translationState.targetLanguage]);
 
   const setSourceText = useCallback((text: string) => {
     setTranslationState(prev => ({ ...prev, sourceText: text }));
@@ -188,7 +188,9 @@ export const useTranslation = (): UseTranslationReturn => {
   const targetLanguages = languages.filter(lang => lang.value !== 'auto');
 
   function stripLangHyphen(label: string) {
-    return label.substring(0, label.indexOf('-'))
+    const index = label.indexOf('-');
+    if (index === -1) return label;
+    else return label.substring(0, index);
   }
 
   // Cleanup on unmount

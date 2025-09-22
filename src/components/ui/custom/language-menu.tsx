@@ -45,6 +45,7 @@ interface LanguageDropdownProps {
   selectedLanguage?: string;
   placeholder?: string;
   size?: "sm" | "md" | "lg";
+  haveAuto?: boolean;
 }
 
 export default function LanguageDropdown({
@@ -53,7 +54,16 @@ export default function LanguageDropdown({
   selectedLanguage = "en-US",
   placeholder = "English (United States)",
   size = "md",
+  haveAuto = false,
 }: LanguageDropdownProps) {
+    if (!haveAuto) {
+      allLanguages = allLanguages.filter(lang => lang.value !== "auto");
+    } else if (haveAuto && !allLanguages.some(lang => lang.value === "auto")) {
+      allLanguages.unshift({ value: 'auto', label: 'Auto Detect' });
+      selectedLanguage = "auto"
+      placeholder = "Auto Detect"
+    }
+  
   const { open, onToggle, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState(FILTER_TYPES.ALL);

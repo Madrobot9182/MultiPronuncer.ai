@@ -13,9 +13,6 @@ import {
   Text,
   Textarea,
   VStack,
-  Alert,
-  AlertIcon,
-  AlertDescription,
   Button,
   Badge,
 } from "@chakra-ui/react";
@@ -44,15 +41,9 @@ export default function TranslationInterface({
     setTargetLanguage,
     swapLanguages,
     clearTranslation,
+    getLanguageByValue,
   } = useTranslation();
 
-//   const {
-//     languages,
-//     targetLanguages,
-//     isLoading: languagesLoading,
-//     error: languagesError,
-//     getLanguageByCode,
-//   } = useLanguages();
 
   // Theme colors
   const bgColor = useColorModeValue("white", "gray.800");
@@ -72,23 +63,12 @@ export default function TranslationInterface({
       speechSynthesis.speak(utterance);
     }
   };
-
+  console.log(translationState.sourceLanguage);
   const canSwapLanguages =
     translationState.sourceLanguage !== "auto" &&
     translationState.translatedText.trim() !== "";
 
-//   if (languagesLoading) {
-//     return (
-//       <Container maxW="6xl" py={8}>
-//         <VStack gap={4}>
-//           <Spinner size="lg" />
-//           <Text>Loading translation interface...</Text>
-//         </VStack>
-//       </Container>
-//     );
-//   }
-
-  return (
+    return (
     <Container maxW="6xl" py={8} className={className}>
       <VStack gap={6} align="stretch">
         {/* Header */}
@@ -126,48 +106,57 @@ export default function TranslationInterface({
             bg={headerBgColor}
             p={4}
             align="center"
-            justify="space-between"
             borderBottomWidth="1px"
             borderBottomColor={borderColor}
           >
-            <HStack flex={1} gap={3}>
+            {/* Left side */}
+            <Box flex="1">
+              <HStack gap={3}>
+                <LanguageDropdown
+                  onLanguageSelect={setSourceLanguage}
+                  allLanguages={TRANSLATION_LANGUAGES}
+                  haveAuto={true}
+                />
+
+                {translationState.detectedLanguage &&
+                  translationState.sourceLanguage === "auto" && (
+                    <Badge colorScheme="blue" size="sm">
+                      Detected: {" "}
+                      {getLanguageByValue(translationState.detectedLanguage)
+              ?.label || translationState.detectedLanguage}
+                    </Badge>
+                  )}
+              </HStack>
+            </Box>
+
+            {/* Center */}
+            <Box flex="0" mx="auto">
+              <Tooltip
+                content={
+                  canSwapLanguages
+                    ? "Swap languages"
+                    : "Cannot swap with auto-detect"
+                }
+              >
+                <IconButton
+                  aria-label="Swap languages"
+                  size="sm"
+                  variant="ghost"
+                  onClick={swapLanguages}
+                  disabled={!canSwapLanguages}
+                >
+                  <LuArrowLeftRight size={16} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            {/* Right side */}
+            <Box flex="1" display="flex" justifyContent="flex-end">
               <LanguageDropdown
-                onLanguageSelect={setSourceLanguage}
+                onLanguageSelect={setTargetLanguage}
                 allLanguages={TRANSLATION_LANGUAGES}
               />
-
-              {translationState.detectedLanguage &&
-                translationState.sourceLanguage === "auto" && (
-                  <Badge colorScheme="blue" size="sm">
-                    Detected:{" "}
-                    {/* {getLanguageByCode(translationState.detectedLanguage)
-                      ?.name || translationState.detectedLanguage} */}
-                  </Badge>
-                )}
-            </HStack>
-
-            <Tooltip
-              content={
-                canSwapLanguages
-                  ? "Swap languages"
-                  : "Cannot swap with auto-detect"
-              }
-            >
-              <IconButton
-                aria-label="Swap languages"
-                size="sm"
-                variant="ghost"
-                onClick={swapLanguages}
-                disabled={!canSwapLanguages}
-              >
-                <LuArrowLeftRight size={16} />{" "}
-              </IconButton>
-            </Tooltip>
-
-            <LanguageDropdown
-              onLanguageSelect={setTargetLanguage}
-              allLanguages={TRANSLATION_LANGUAGES}
-            />
+            </Box>
           </Flex>
 
           {/* Translation Areas */}
@@ -232,6 +221,7 @@ export default function TranslationInterface({
                   outline="none"
                   fontSize="lg"
                   h="full"
+                  p={3}
                   _focus={{
                     boxShadow: "none",
                   }}
@@ -318,7 +308,7 @@ export default function TranslationInterface({
                       </Text>
                     </VStack>
                   ) : translationState.translatedText ? (
-                    <Text fontSize="lg" lineHeight="tall">
+                    <Text fontSize="lg" lineHeight="tall" textAlign="start">
                       {translationState.translatedText}
                     </Text>
                   ) : (
@@ -336,6 +326,15 @@ export default function TranslationInterface({
                   <Text fontSize="xs" color={mutedTextColor}>
                     {translationState.translatedText.length} characters
                   </Text>
+                  {translationState.sourceText && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={clearTranslation}
+                    >
+                      Clear <FiRotateCcw size={12} />
+                    </Button>
+                  )}
                 </HStack>
               </VStack>
             </GridItem>

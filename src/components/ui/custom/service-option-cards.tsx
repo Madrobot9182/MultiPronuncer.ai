@@ -16,11 +16,11 @@ const items = [
     title: "Translator",
     description: "Translate between multiple languages",
   },
-  {
-    value: "tts",
-    title: "Text To Speech",
-    description: "Convert text to spoken audio",
-  },
+  // {
+  //   value: "tts",
+  //   title: "Text To Speech",
+  //   description: "Convert text to spoken audio",
+  // },
 ];
 
 export default function ServiceOptionCards({
